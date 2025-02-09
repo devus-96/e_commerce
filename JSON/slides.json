@@ -1,0 +1,37 @@
+{
+    "slides": [
+        {
+          "_id": "1",
+          "name": "Slide 1",
+          "description": "Description de la slide 1",
+          "slug": "slide-1",
+          "image": "url_image_1.jpg",
+          "user_id": "user123",
+          "status": "publish",
+          "slideItem": ["item1", "item2"],
+          "createdAt": "2024-05-15T10:00:00.000Z"
+        },
+        {
+          "_id": "2",
+          "name": "Slide 2",
+          "description": "Description de la slide 2",
+          "slug": "slide-2",
+          "image": "url_image_2.png",
+          "user_id": "user456",
+          "status": "draft",
+          "slideItem": ["item3"],
+          "createdAt": "2024-05-16T14:30:00.000Z"
+        },
+        {
+          "_id": "3",
+          "name": "Slide 3",
+          "description": "Description de la slide 3",
+          "slug": "slide-3",
+          "image": "url_image_3.gif",
+          "user_id": "user789",
+          "status": "archive",
+          "slideItem": ["item4", "item5", "item6"],
+          "createdAt": "2024-05-17T09:15:00.000Z"
+        }
+      ]
+}

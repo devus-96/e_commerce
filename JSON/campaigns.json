@@ -1,0 +1,40 @@
+{
+    "campaigns": [
+        {
+          "name": "Slide 1 Form Data",
+          "description": "Description pour le formulaire de la slide 1",
+          "slug": "slide-1-form",
+          "image": null,
+          "title": "Titre de la slide 1",
+          "subtitle": "Sous-titre de la slide 1",
+          "textColor": "#000000",
+          "btn": "Bouton 1",
+          "productId": "product123",
+          "status": "draft"
+        },
+        {
+          "name": "Slide 2 Form Data",
+          "description": "Description pour le formulaire de la slide 2",
+          "slug": "slide-2-form",
+          "image": null,
+          "title": "Titre de la slide 2",
+          "subtitle": "Sous-titre de la slide 2",
+          "textColor": "#FFFFFF",
+          "btn": "Bouton 2",
+          "productId": "product456",
+          "status": "publish"
+        },
+        {
+          "name": "Slide 3 Form Data",
+          "description": "Description pour le formulaire de la slide 3",
+          "slug": "slide-3-form",
+          "image": null,
+          "title": "Titre de la slide 3",
+          "subtitle": "Sous-titre de la slide 3",
+          "textColor": "#FF0000",
+          "btn": "Bouton 3",
+          "productId": "product789",
+          "status": "approve"
+        }
+      ]
+}

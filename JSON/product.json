@@ -1,0 +1,257 @@
+{
+    "product": [
+      [
+        {
+          "_id": "64a1b2c3d4e5f6a7b8c9d0e1",
+          "featured": true,
+          "badge": "hot",
+          "name": "Smartphone XYZ",
+          "slug": "smartphone-xyz",
+          "description": "Un smartphone haut de gamme avec des fonctionnalités avancées.",
+          "additionnal": "Livraison gratuite disponible",
+          "specification": "Écran 6.5 pouces, 128 Go de stockage, 8 Go de RAM",
+          "store": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0e2",
+            "name": "Tech Store",
+            "description": "Le meilleur magasin pour les gadgets technologiques.",
+            "logo": "https://example.com/tech-store-logo.jpg",
+            "status": "online",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "collections": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0e3",
+            "name": "Smartphones",
+            "description": "Collection de smartphones haut de gamme.",
+            "slug": "smartphones",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "tags": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0e4",
+            "name": "Android",
+            "description": "Produits compatibles avec Android.",
+            "slug": "android",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "category": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0e5",
+            "name": "Électronique",
+            "description": "Catégorie pour les produits électroniques.",
+            "slug": "electronique",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "subCategories": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0e6",
+              "name": "Téléphones",
+              "description": "Sous-catégorie pour les téléphones.",
+              "slug": "telephones",
+              "status": "publish",
+              "createdAt": "2023-07-01T12:00:00Z"
+            }
+          ],
+          "brand": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0e7",
+            "name": "XYZ Brand",
+            "description": "Une marque de smartphones renommée.",
+            "slug": "xyz-brand",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "details": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0e8",
+              "key": "Couleur",
+              "value": "Noir"
+            },
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0e9",
+              "key": "Poids",
+              "value": "180g"
+            }
+          ],
+          "questions": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0f1",
+              "question": "Est-il résistant à l'eau ?",
+              "answer": "Oui, il est résistant à l'eau IP68."
+            }
+          ],
+          "reviews": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0f2",
+              "rating": 5,
+              "review": "Excellent produit !",
+              "user": {
+                "_id": "64a1b2c3d4e5f6a7b8c9d0f3",
+                "imageUrl": "https://example.com/user1.jpg",
+                "fullName": "Jean Dupont"
+              }
+            }
+          ],
+          "productVariants": [
+            {
+              "productId": "64a1b2c3d4e5f6a7b8c9d0e1",
+              "name": "128 Go",
+              "color": {
+                "_id": "64a1b2c3d4e5f6a7b8c9d0f4",
+                "name": "Noir",
+                "value": "#000000"
+              },
+              "size": {
+                "_id": "64a1b2c3d4e5f6a7b8c9d0f5",
+                "name": "6.5 pouces",
+                "value": "6.5"
+              },
+              "price": 799,
+              "discount": 50,
+              "inventory": "instock",
+              "status": "publish"
+            }
+          ],
+          "images": [
+            "https://example.com/smartphone-xyz-1.jpg",
+            "https://example.com/smartphone-xyz-2.jpg"
+          ],
+          "price": 799,
+          "discount": 50,
+          "seoSlug": "smartphone-xyz",
+          "seoDescription": "Découvrez le smartphone XYZ avec des fonctionnalités avancées.",
+          "seoTitle": "Smartphone XYZ - Haut de gamme",
+          "status": "publish",
+          "inventory": "instock",
+          "weight": 180,
+          "sku": "XYZ-128",
+          "unit": "pièce",
+          "user_id": "64a1b2c3d4e5f6a7b8c9d0f6",
+          "views": 1500,
+          "createdAt": "2023-07-01T12:00:00Z"
+        },
+        {
+          "_id": "64a1b2c3d4e5f6a7b8c9d0f7",
+          "featured": false,
+          "badge": "sale",
+          "name": "Casque Audio ABC",
+          "slug": "casque-audio-abc",
+          "description": "Casque audio sans fil avec réduction de bruit.",
+          "additionnal": "Garantie 2 ans",
+          "specification": "Réduction de bruit active, autonomie 30 heures",
+          "store": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0f8",
+            "name": "Audio Store",
+            "description": "Le meilleur magasin pour les accessoires audio.",
+            "logo": "https://example.com/audio-store-logo.jpg",
+            "status": "online",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "collections": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0f9",
+            "name": "Casques Audio",
+            "description": "Collection de casques audio haut de gamme.",
+            "slug": "casques-audio",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "tags": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0fa",
+            "name": "Sans Fil",
+            "description": "Produits sans fil.",
+            "slug": "sans-fil",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "category": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0fb",
+            "name": "Audio",
+            "description": "Catégorie pour les produits audio.",
+            "slug": "audio",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "subCategories": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0fc",
+              "name": "Casques",
+              "description": "Sous-catégorie pour les casques audio.",
+              "slug": "casques",
+              "status": "publish",
+              "createdAt": "2023-07-01T12:00:00Z"
+            }
+          ],
+          "brand": {
+            "_id": "64a1b2c3d4e5f6a7b8c9d0fd",
+            "name": "ABC Brand",
+            "description": "Une marque de casques audio renommée.",
+            "slug": "abc-brand",
+            "status": "publish",
+            "createdAt": "2023-07-01T12:00:00Z"
+          },
+          "details": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0fe",
+              "key": "Couleur",
+              "value": "Blanc"
+            },
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d0ff",
+              "key": "Poids",
+              "value": "250g"
+            }
+          ],
+          "questions": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d100",
+              "question": "Est-il compatible avec Android ?",
+              "answer": "Oui, il est compatible avec Android et iOS."
+            }
+          ],
+          "reviews": [
+            {
+              "_id": "64a1b2c3d4e5f6a7b8c9d101",
+              "rating": 4,
+              "review": "Très bon casque, mais un peu cher.",
+              "user": {
+                "_id": "64a1b2c3d4e5f6a7b8c9d102",
+                "imageUrl": "https://example.com/user2.jpg",
+                "fullName": "Marie Curie"
+              }
+            }
+          ],
+          "productVariants": [
+            {
+              "productId": "64a1b2c3d4e5f6a7b8c9d0f7",
+              "name": "Noir",
+              "color": {
+                "_id": "64a1b2c3d4e5f6a7b8c9d103",
+                "name": "Noir",
+                "value": "#000000"
+              },
+              "price": 299,
+              "discount": 0,
+              "inventory": "instock",
+              "status": "publish"
+            }
+          ],
+          "images": [
+            "https://example.com/casque-abc-1.jpg",
+            "https://example.com/casque-abc-2.jpg"
+          ],
+          "price": 299,
+          "discount": 0,
+          "seoSlug": "casque-audio-abc",
+          "seoDescription": "Découvrez le casque audio ABC avec réduction de bruit active.",
+          "seoTitle": "Casque Audio ABC - Sans Fil",
+          "status": "publish",
+          "inventory": "instock",
+          "weight": 250,
+          "sku": "ABC-001",
+          "unit": "pièce",
+          "user_id": "64a1b2c3d4e5f6a7b8c9d104",
+          "views": 800,
+          "createdAt": "2023-06-15T10:30:00Z"
+        }
+      ]
+    ]
+}
