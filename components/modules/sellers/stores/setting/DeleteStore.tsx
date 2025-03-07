@@ -11,14 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Shuffle, Trash } from "lucide-react";
 import { Alert } from "@/components/custom/Alert";
 import { TypeStoreModel } from "@/types/models";
-
-import useSWRMutation from "swr/mutation";
-import { DeleteRequestArgs, SwitchRequestArgs } from "@/types/mutations";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { useAuth } from "@clerk/nextjs";
-import { toast } from "@/hooks/use-toast";
-import { storeServices } from "@/api/storeService";
+import { useStore } from "@/api/endpoint/store";
+import { useUser } from "@/api/endpoint/user";
 
 export default function DeleteStore({
   data,
@@ -29,45 +23,9 @@ export default function DeleteStore({
 }) {
   // 1. Hooks
   const [openAlert, setOpenAlert] = useState<boolean>(false);
-  const router = useRouter();
-  const { getToken } = useAuth();
-  const { DeleteStore, isDeleting} = storeServices()
+  const {DeleteStore, isDeleting} = useStore();
+  const {SwitchAccount, isSwitching } = useUser()
 
-  
-
-  async function switchRequest(
-    url: string,
-    { arg }: { arg: SwitchRequestArgs }
-  ) {
-    const token = await getToken();
-    return await axios
-      .put(url, arg.queryParams, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-        });
-        location.reload();
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {
-        router.push("/admin/dashboard");
-      });
-  }
-
-  const { trigger: SwitchAccount, isMutating: isSwitching } = useSWRMutation(
-    process.env.NEXT_PUBLIC_API_URL + "/api/user/users",
-    switchRequest /* options */
-  );
 
   // Define a submit handler.
   const onDelete = async () => {
@@ -94,7 +52,7 @@ export default function DeleteStore({
         <CardContent className="grid place-content-center">
           <Button
             disabled={isDeleting}
-            variant="destructive"
+            variant="danger"
             size="icon"
             onClick={() => setOpenAlert(!openAlert)}
           >

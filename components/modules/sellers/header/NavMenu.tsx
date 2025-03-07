@@ -99,7 +99,7 @@ export default function NavMenu({ storeId }: { storeId: string | undefined }) {
           <li>
             <Button
               asChild
-              variant="default"
+              variant="primary"
               className="border-indigo-500 bg-indigo-500 text-white hover:bg-transparent hover:text-black"
               size="sm"
             >
@@ -137,7 +137,7 @@ export default function NavMenu({ storeId }: { storeId: string | undefined }) {
           <li>
             <Button
               asChild
-              variant="default"
+              variant="primary"
               className="border-indigo-500 bg-indigo-500 text-white hover:bg-transparent hover:text-black"
               size="sm"
             >

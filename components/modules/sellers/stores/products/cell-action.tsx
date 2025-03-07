@@ -23,6 +23,30 @@ export const CellAction: React.FC<CellActionProps> = ({ data }) => {
   const router = useRouter();
   const params = useParams();
 
+  // const [openAlert, setOpenAlert] = useState<boolean>(false);
+  // const [loading, setLoading] = useState(false);
+
+  // const onConfirm = async () => {
+  //   try {
+  //     setLoading(true);
+  //     await axios.delete(`/api/brands/${data._id}`);
+  //     toast({
+  //       variant: "default",
+  //       title: "Well done ✔️",
+  //       description: "Brand is deleted",
+  //     });
+  //     router.refresh();
+  //   } catch (error) {
+  //     toast({
+  //       variant: "destructive",
+  //       title: "Error occur ",
+  //       description: "Retry",
+  //     });
+  //   } finally {
+  //     setOpenAlert(false);
+  //     setLoading(false);
+  //   }
+  // };
 
   const onCopy = (id: string) => {
     navigator.clipboard.writeText(id);

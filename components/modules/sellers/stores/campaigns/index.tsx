@@ -4,10 +4,10 @@ import usePagination from "@/hooks/usePagination";
 import { Pagination } from "@mui/material";
 import Content from "./Content";
 import Loading from "@/components/custom/Loading";
-import { campaignService } from "@/api/campaignServices";
+import { useCampaigns } from "@/api/endpoint/campaign";
 
 export default function Campaigns({ storeId }: { storeId: string }) {
-  const { data, isLoading } = campaignService(storeId)
+  const {data, isLoading} = useCampaigns({ storeId: storeId })
   
   const [page, setPage] = useState(1);
   const PER_PAGE = 6;

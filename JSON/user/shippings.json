@@ -1,0 +1,97 @@
+{
+    "shippings": {
+        "data": [
+            {
+              "_id": "654b7d2f9d8a0b1c2e3f4g5h",
+              "name": "Livraison Standard",
+              "slug": "livraison-standard",
+              "description": "Livraison standard en 3-5 jours ouvrables.",
+              "image": "/images/shipping-standard.jpg",
+              "status": "publish",
+              "user_id": "auth0|654b7c1e8d7a9b0c1d2e3f4g",
+              "delay": 5,
+              "fixed_amount": 0,
+              "unit_price_weight": 10,
+              "price_range_start": 0,
+              "price_range_end": 50,
+              "fees": 2,
+              "region": ["France", "Belgique", "Suisse"],
+              "createdAt": "2023-11-08T10:00:00.000Z",
+              "storeId": "123456"
+            },
+            {
+              "_id": "654b7d3a0e9b1c2d3f4g5h6i",
+              "name": "Livraison Express",
+              "slug": "livraison-express",
+              "description": "Livraison express en 1-2 jours ouvrables.",
+              "image": "/images/shipping-express.jpg",
+              "status": "publish",
+              "user_id": "auth0|654b7c1e8d7a9b0c1d2e3f4g",
+              "delay": 2,
+              "fixed_amount": 15,
+              "unit_price_weight": 20,
+              "price_range_start": 0,
+              "price_range_end": 100,
+              "fees": 5,
+              "region": ["France", "Allemagne", "Luxembourg"],
+              "createdAt": "2023-11-08T10:05:00.000Z",
+              "storeId": "123456"
+            },
+            {
+              "_id": "654b7d451f0c2d3e4g5h6i7j",
+              "name": "Livraison Internationale",
+              "slug": "livraison-internationale",
+              "description": "Livraison internationale (délais variables).",
+              "image": "/images/shipping-international.jpg",
+              "status": "draft",
+              "user_id": "auth0|654b7c1e8d7a9b0c1d2e3f4g",
+              "delay": 10,
+              "fixed_amount": 25,
+              "unit_price_weight": 30,
+              "price_range_start": 0,
+              "price_range_end": 200,
+              "fees": 10,
+              "region": ["USA", "Canada", "Japon"],
+              "createdAt": "2023-11-08T10:10:00.000Z",
+              "storeId": "789012"
+            },
+            {
+              "_id": "654b7d502g1d3e4f5h6i7j8k",
+              "name": "Retrait en magasin",
+              "slug": "retrait-magasin",
+              "description": "Retrait gratuit en magasin sous 24h.",
+              "image": "/images/shipping-pickup.jpg",
+              "status": "publish",
+              "user_id": "auth0|654b7c1e8d7a9b0c1d2e3f4g",
+              "delay": 1,
+              "fixed_amount": 0,
+              "unit_price_weight": 0,
+              "price_range_start": 0,
+              "price_range_end": 0,
+              "fees": 0,
+              "region": ["France"],
+              "createdAt": "2023-11-08T10:15:00.000Z",
+              "storeId": "123456"
+            },
+            {
+              "_id": "654b7d5b3h2e4f5g6i7j8k9l",
+              "name": "Livraison locale",
+              "slug": "livraison-locale",
+              "description": "Livraison rapide dans votre région.",
+              "image": "/images/shipping-local.jpg",
+              "status": "archive",
+              "user_id": "auth0|654b7c1e8d7a9b0c1d2e3f4g",
+              "delay": 3,
+              "fixed_amount": 5,
+              "unit_price_weight": 15,
+              "price_range_start": 0,
+              "price_range_end": 75,
+              "fees": 3,
+              "region": ["Paris", "Lyon", "Marseille"],
+              "createdAt": "2023-11-08T10:20:00.000Z",
+              "storeId": "789012"
+            }
+          ]
+    }
+}
+

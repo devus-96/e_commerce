@@ -1,22 +1,94 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { FaCheckCircle } from "react-icons/fa";
+import { TypeSubscriptionModel } from "@/types/models";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { CheckoutFormData } from "@/types/forms";
+import { toast } from "@/hooks/use-toast";
+import getStripe from "@/lib/get-stripejs";
 import { useAuth } from "@clerk/nextjs";
-import { checkoutValidationSchema } from "@/api/subscription/type"; 
+import useSWRMutation from "swr/mutation";
+import { checkoutValidationSchema } from "@/types/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { subscriptionPlan } from "@/constants";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import Loading from "./Loading";
-import { useStripeSubscription } from "@/api/subscription/stripeSouscription";
 
 export default function PricingCard({ data }: { data: any }) {
-  const { userId } = useAuth();
-  const {subscription, onSubmit, isLoading, isCreating} = useStripeSubscription()
+  const router = useRouter();
+  const [isLoading, setLoading] = useState(false);
+  const [subscription, setSubscription] = useState<TypeSubscriptionModel>();
+  const { userId, getToken } = useAuth();
 
 
-  // 1. Define your validation.
+  useEffect(() => {
+    const getData = async () => {
+      setLoading(true);
+      const token = await getToken();
+      await axios
+        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/subscriptions", {
+          params: {
+            user_id: userId,
+          },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          setSubscription(response.data.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    };
+    if (userId) getData();
+  }, []);
+
+  async function postRequest(url: string, { arg }: { arg: CheckoutFormData }) {
+    const token = await getToken();
+    return await axios
+      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(async (response) => {
+        const data = response.data;
+        toast({
+          variant: "default",
+          title: "Success...✔️",
+          description: data.message,
+        });
+
+        const stripe = await getStripe();
+        await stripe!.redirectToCheckout({
+          // Make the id field from the Checkout Session creation API response
+          // available to this file, so you can provide it as parameter here
+          // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
+          sessionId: response.data.id,
+        });
+      })
+      .catch((err) => {
+        console.log(err.message);
+      })
+      .finally(() => {});
+  }
+
+  // 1. Get user and set api
+  const { trigger: create, isMutating: isCreating } = useSWRMutation(
+    "/api/user/subscriptions",
+    postRequest /* options */
+  );
+
+  // 2. Define your validation.
   const form = useForm<z.infer<typeof checkoutValidationSchema>>({
     resolver: zodResolver(checkoutValidationSchema),
     defaultValues: {
@@ -24,6 +96,28 @@ export default function PricingCard({ data }: { data: any }) {
       amount: subscriptionPlan[1].price,
     },
   });
+
+  // 3. Define a submit handler.
+  const onSubmit = async () => {
+    if (!userId) {
+      router.push("/sign-in");
+      return;
+    }
+    if (subscription?.type === "pro" && subscription.status === "active") {
+      toast({
+        variant: "default",
+        title: "Already subscribed",
+        description: "You have an active subscription",
+      });
+      return;
+    }
+
+    const data = {
+      user_id: userId ? userId : "",
+      amount: subscriptionPlan[1].price,
+    };
+    await create(data);
+  };
 
   return (
     <>

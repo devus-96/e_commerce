@@ -6,69 +6,42 @@ import { Separator } from "@/components/ui/separator";
 import { ChartColumn, DollarSign, Package } from "lucide-react";
 import CurrencyFormat from "@/components/custom/CurrencyFormat";
 import { TypeOrderItemModel, TypeProductModel } from "@/types/models";
-import axios from "axios";
 import Loading from "@/components/custom/Loading";
-import { useAuth } from "@clerk/nextjs";
+import { useProduct } from "@/api/endpoint/product";
+import { useOrder } from "@/api/endpoint/order";
 
 export default function Dashboard({ storeId }: { storeId: string }) {
   const [products, setProducts] = useState<TypeProductModel[]>();
   const [sales, setSales] = useState<TypeOrderItemModel[]>();
   const [earnings, setEarnings] = useState<number>(0);
   const [isLoading, setLoading] = useState(false);
-  const { getToken } = useAuth();
+  const {u_product} = useProduct({ storeId: storeId });
+  const {order} = useOrder({ storeId: storeId, action: "earning" });
 
   useEffect(() => {
     const getProducts = async () => {
       setLoading(true);
-      const token = await getToken();
-
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/products", {
-          params: { storeId: storeId },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setProducts(response.data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      u_product.then((response) => {
+        setProducts(response.data.data);
+      }).finally(() => {
+        setLoading(false);
+      })
     };
     getProducts();
 
     const getSales = async () => {
       setLoading(true);
-      const token = await getToken();
-
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/orderitems", {
-          params: { storeId: storeId, action: "earning" },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setSales(response.data.data);
+      order.then((response) => {
+        setSales(response.data.data);
           const _earnings = response.data.data.reduce(
             (total: number, currentValue: TypeOrderItemModel) =>
               total + currentValue.earning,
             0
           );
           setEarnings(_earnings);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      }).finally(() => {
+        setLoading(false);
+      })
     };
     getProducts();
     getSales();

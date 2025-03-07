@@ -77,7 +77,7 @@ export function Hero() {
                   >
                     <div className="font-semibold capitalize">
                       report and data analysis
-                      <Badge className="text-sm" variant="secondary">
+                      <Badge className="text-sm" variant="green">
                         Coming up
                       </Badge>
                     </div>
@@ -95,7 +95,7 @@ export function Hero() {
                   >
                     <div className="font-semibold capitalize">
                       Email Marketing
-                      <Badge className="text-sm" variant="secondary">
+                      <Badge className="text-sm" variant="green">
                         Coming up
                       </Badge>
                     </div>

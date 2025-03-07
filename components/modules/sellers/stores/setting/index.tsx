@@ -1,12 +1,14 @@
 "use client";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Informations from "./Informations";
 import Preferences from "./Preferences";
+import { TypeStoreModel } from "@/types/models";
 import Loading from "@/components/custom/Loading";
-import { storeServices } from "@/api/storeService"; 
+import { useAuth } from "@clerk/nextjs";
+import { useStore } from "@/api/endpoint/store";
 
 export default function Settings({
   storeId,
@@ -15,11 +17,26 @@ export default function Settings({
   storeId: string | null;
   check: boolean;
 }) {
-    const { stores, isFetchingStore } = storeServices(storeId)
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<TypeStoreModel>();
+  const { userId } = useAuth();
+  const {u_store} = useStore({ storeId: storeId, userId: userId })
 
+  // Api call using use effect
+  useEffect(() => {
+    const getData = async () => {
+      setLoading(true);
+      u_store.then((response) => {
+        setData(response.data.data);
+      }).finally(() => {
+        setLoading(false);
+      });
+    };
+    getData();
+  }, [storeId, userId]);
   return (
     <>
-      {isFetchingStore && <Loading loading={true} />}
+      {loading && <Loading loading={true} />}
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-4">
           <Heading name="Settings" description="Customize your store" />
@@ -35,7 +52,7 @@ export default function Settings({
             value="account"
             className="w-full grid grid-cols-1  lg:grid-cols-4 gap-4"
           >
-            {stores && <Informations data={stores} check={check} />}
+            {data && <Informations data={data} check={check} />}
           </TabsContent>
           <TabsContent value="password">
             <Preferences />

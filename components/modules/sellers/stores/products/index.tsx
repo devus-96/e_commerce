@@ -6,15 +6,19 @@ import useSWR, { Fetcher } from "swr";
 import axios from "axios";
 import Loading from "@/components/custom/Loading";
 import { useAuth } from "@clerk/nextjs";
-import { getHttpClient } from "@/lib/http";
 
 export default function Products({ storeId }: { storeId: string }) {
   const { getToken } = useAuth();
   // fecthing
   const fetcher: Fetcher<Product[], string> = async (url) => {
-    return await getHttpClient()
+    const token = await getToken();
+    return await axios
       .get(url, {
         params: { storeId: storeId },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then((res) => res.data.data)
       .catch((err) => console.log(err))

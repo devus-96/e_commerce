@@ -1,35 +1,17 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
 import { StoreFormData } from "@/types/forms";
-import useSWRMutation from "swr/mutation";
 import { storeValidationSchema } from "@/types/schemas";
 import { z } from "zod";
 import { TypeStoreModel } from "@/types/models";
-import DeleteStore from "./DeleteStore";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
-import { useAuth } from "@clerk/nextjs";
-import { storeServices } from "@/api/storeService"; 
+import DeleteStore from "./DeleteStore";
+import { useStore } from "@/api/endpoint/store";
 
 export default function Informations({
   data,
@@ -38,7 +20,7 @@ export default function Informations({
   data: TypeStoreModel;
   check: boolean;
 }) {
-  const { error, updateStore, isUpdating} = storeServices()
+  const {updateUserStore, isUpdatingUserStore, error} = useStore();
 
   // 2. Define your validation.
   const form = useForm<z.infer<typeof storeValidationSchema>>({
@@ -56,7 +38,7 @@ export default function Informations({
       description: values.description,
     };
 
-    await updateStore({
+    await updateUserStore({
       requestBody: newValues,
       queryParams: { storeId: data._id },
     });
@@ -105,7 +87,7 @@ export default function Informations({
                   </FormItem>
                 )}
               />
-              <Button disabled={isUpdating} type="submit">
+              <Button disabled={isUpdatingUserStore} type="submit">
                 Update
               </Button>
             </form>

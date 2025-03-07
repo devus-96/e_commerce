@@ -1,6 +1,5 @@
-import { descriptionFormat, nameFormat,  slugFormat} from "@/lib/regex";
+import { descriptionFormat, nameFormat, slugFormat } from "@/lib/regex";
 import { z, ZodType } from "zod";
-
 import {
   AddressFormData,
   BrandFormData,
