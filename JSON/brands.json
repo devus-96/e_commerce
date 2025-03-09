@@ -1,0 +1,24 @@
+{
+    "brands": {
+            "data": [
+                {
+                  "id": "0",
+                  "name": "Tech Innovations",
+                  "slug": "tech-innovations",
+                  "description": "Leading the way in cutting-edge technology solutions.",
+                  "image": "https://example.com/tech-innovations.jpg",
+                  "status": "publish",
+                  "user_id": "user123",
+                  "createdAt": "2023-10-27T10:00:00Z"
+                }
+              ]
+    },
+
+    "api/user/brands": {
+        "data": {
+            "data": {
+                
+            }
+        }
+    }
+}

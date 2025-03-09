@@ -8,7 +8,7 @@ import Preferences from "./Preferences";
 import { TypeStoreModel } from "@/types/models";
 import Loading from "@/components/custom/Loading";
 import { useAuth } from "@clerk/nextjs";
-import { useStore } from "@/api/endpoint/store";
+import { get_user_Store } from "@/api/endpoint/store";
 
 export default function Settings({
   storeId,
@@ -20,13 +20,12 @@ export default function Settings({
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<TypeStoreModel>();
   const { userId } = useAuth();
-  const {u_store} = useStore({ storeId: storeId, userId: userId })
 
   // Api call using use effect
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      u_store.then((response) => {
+      get_user_Store({ storeId: storeId, userId: userId }).then((response) => {
         setData(response.data.data);
       }).finally(() => {
         setLoading(false);

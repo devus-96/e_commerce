@@ -7,7 +7,7 @@ import {
 } from "@clerk/nextjs/server";
 
 const isAuthRoute = createRouteMatcher(["/stores(.*)"]);
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+//const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const client = await clerkClient();
@@ -20,15 +20,15 @@ export default clerkMiddleware(async (auth, req) => {
     });
 
   // protect url access pages for admin
-  if (
+  /*if (
     isAdminRoute(req) &&
-    (await auth()).sessionClaims?.metadata.role === undefined
+    (await auth()).sessionClaims?.metadata?.role === undefined
   ) {
     return NextResponse.redirect(new URL("/forbidden", req.url));
   }
 
   //else
-  return NextResponse.next();
+  return NextResponse.next();*/
 });
 export const config = {
   matcher: [

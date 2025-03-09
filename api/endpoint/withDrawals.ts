@@ -1,11 +1,25 @@
 import useSWRMutation from "swr/mutation";
-import { getRequest, paramsProps, postRequest, putRequest, searchResquest } from "../services";
+import { paramsProps, postRequest, putRequest, fetcher } from "../services";
 import { WithdrawalFormData } from "@/types/forms";
 import useSWR from "swr";
 import { Withdrawl } from "@/components/modules/sellers/stores/withdrawals/columns";
+import { HttpClient } from "../httpClient";
+import { handleError } from "../toast";
 
-export function useWithdrawals (params: paramsProps, g_params?:paramsProps) {
-    const withdrawals = getRequest("/api/user/withdrawals", g_params); 
+export async function getWithdrawal (params?: paramsProps) {
+return await HttpClient()
+  .get("/api/user/withdrawals", {
+    params: params ? params : undefined,
+  })
+  .then((response) => {
+    return response.data.data;
+  })
+  .catch((error) => {
+    handleError(error);
+  })
+};
+
+export function useWithdrawals (params?: paramsProps) {
 
     const { trigger: create, isMutating: isCreating } = useSWRMutation(
         "/api/user/withdrawals",
@@ -17,37 +31,25 @@ export function useWithdrawals (params: paramsProps, g_params?:paramsProps) {
         (url, { arg }: {arg: WithdrawalFormData}) => putRequest<WithdrawalFormData>(url, params, { arg }) // Passer l'ID de la commande
     );
 
-    const fetcher = searchResquest<Withdrawl>(params)
-
-    const { data, isLoading } = useSWR<Withdrawl[]>(
+    const { data: withdrawals, isLoading: loading } = useSWR<Withdrawl[]>(
         "/api/user/withdrawals",
-        fetcher
+        fetcher<Withdrawl>(params)
     );
 
-    /*function getWithDrawals () {
-        const fetcher = searchResquest<Withdrawl>(params)
-
-        const { data, isLoading } = useSWR<Withdrawl[]>(
-            "/api/admin/withdrawals",
-            fetcher
-        );
-
-        return {
-            data,
-            isLoading
-        }
-
-    }*/
+    const { data, isLoading } = useSWR<Withdrawl[]>(
+        "/api/admin/withdrawals",
+        fetcher<Withdrawl>(params)
+    );
 
     return { 
         withdrawals,
+        loading,
         create,
         isCreating,
         update,
         isUpdating,
         data,
-        isLoading,
-        //getWithDrawals
+        isLoading
     }
 
 }

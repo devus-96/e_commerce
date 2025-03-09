@@ -106,6 +106,13 @@ import { status, inventory, units } from "@/constants";
 import { nameFormat } from "@/lib/regex";
 import "react-quill-new/dist/quill.snow.css";
 import dynamic from "next/dynamic";
+import { get_user_product, getColors, getImages, getSizes } from "@/api/endpoint/product";
+import { getSubcategories } from "@/api/endpoint/subCategorie";
+import { getCollections } from "@/api/endpoint/collection";
+import { getTags } from "@/api/endpoint/tags";
+import { getCategories } from "@/api/endpoint/category";
+import { get_user_Store } from "@/api/endpoint/store";
+import { getBrands } from "@/api/endpoint/brand";
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 export default function ProductForm({
@@ -460,33 +467,25 @@ export default function ProductForm({
   useEffect(() => {
     const getProduct = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/products", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      get_user_product({ _id: _id })
         .then((response) => {
-          setProduct(response.data.data);
-          setCategory(response.data.data.category);
-          setBrand(response.data.data.brand);
-          setSubCategories(response.data.data.subCategories);
-          setCollections(response.data.data.collections);
-          setTags(response.data.data.tags);
+          setProduct(response);
+          setCategory(response.category);
+          setBrand(response.brand);
+          setSubCategories(response.subCategories);
+          setCollections(response.collections);
+          setTags(response.tags);
           // setProductVariants(response.data.data.productVariants);
-          setImages(response.data.data.images);
+          setImages(response.images);
 
-          form.reset(response.data.data);
+          form.reset(response);
 
           for (
             let index = 0;
-            index < response.data.data.productVariants.length;
+            index < response.productVariants.length;
             index++
           ) {
-            const variant = response.data.data.productVariants[index];
+            const variant = response.productVariants[index];
 
             //fill colors
             const tempColor = {
@@ -518,18 +517,11 @@ export default function ProductForm({
         });
     };
 
-    const getSubCategories = async () => {
+    const fetchSubCategories = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/subcategories", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getSubcategories()
         .then((response) => {
-          setSubCategoriesList(response.data.data);
+          setSubCategoriesList(response);
         })
         .catch((error) => {
           console.log(error);
@@ -539,18 +531,11 @@ export default function ProductForm({
         });
     };
 
-    const getCollections = async () => {
+    const fetchCollections = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/collections", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getCollections()
         .then((response) => {
-          setCollectionsList(response.data.data);
+          setCollectionsList(response);
         })
         .catch((error) => {
           console.log(error);
@@ -560,18 +545,11 @@ export default function ProductForm({
         });
     };
 
-    const getTags = async () => {
+    const fetchTags = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/tags", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getTags()
         .then((response) => {
-          setTagsList(response.data.data);
+          setTagsList(response);
         })
         .catch((error) => {
           console.log(error);
@@ -581,18 +559,11 @@ export default function ProductForm({
         });
     };
 
-    const getData = async () => {
+    const fetchCategories = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/categories", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getCategories()
         .then((response) => {
-          setCategories(response.data.data);
+          setCategories(response);
         })
         .catch((error) => {
           console.log(error);
@@ -602,19 +573,9 @@ export default function ProductForm({
         });
     };
 
-    const getImages = async () => {
+    const fetchImages = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/images", {
-          params: {
-            storeId: storeId,
-          },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getImages({storeId: storeId})
         .then(() => {})
         .catch((error) => {
           console.log(error);
@@ -624,18 +585,11 @@ export default function ProductForm({
         });
     };
 
-    const getColors = async () => {
+    const fetchColors = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/colors", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getColors()
         .then((response) => {
-          setColorsList(response.data.data);
+          setColorsList(response);
         })
         .catch((error) => {
           console.log(error);
@@ -645,16 +599,9 @@ export default function ProductForm({
         });
     };
 
-    const getSizes = async () => {
+    const fetchSizes = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/sizes", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getSizes()
         .then((response) => {
           setSizesList(response.data.data);
         })
@@ -666,19 +613,9 @@ export default function ProductForm({
         });
     };
 
-    const getStore = async () => {
+    const fetchStore = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/stores", {
-          params: {
-            _id: storeId,
-          },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      get_user_Store({_id: storeId})
         .then((response) => {
           setStore(response.data.data);
         })
@@ -690,16 +627,9 @@ export default function ProductForm({
         });
     };
 
-    const getBrands = async () => {
+    const fetchBrands = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/brands", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getBrands()
         .then((response) => {
           setBrands(response.data.data);
         })
@@ -710,18 +640,18 @@ export default function ProductForm({
           setLoading(false);
         });
     };
-    getData();
-    getImages();
-    getColors();
-    getSizes();
-    getStore();
+    fetchCollections();
+    fetchImages();
+    fetchColors();
+    fetchSizes();
+    fetchStore();
     if (_id) {
       getProduct();
     }
-    getSubCategories();
-    getBrands();
-    getCollections();
-    getTags();
+    fetchSubCategories();
+    fetchCategories()
+    fetchBrands();
+    fetchTags();
   }, [form]);
 
   // 6. Define a submit handler.

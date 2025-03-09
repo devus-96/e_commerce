@@ -1,5 +1,5 @@
 import Container from "@/components/custom/Container";
-import CampaignForm from "@/components/modules/sellers/stores/campaigns/CampaignsForm";
+import CampaignForm from "@/components/modules/sellers/stores/campaigns/CampaignForm";
 import { Metadata } from "next";
 import React from "react";
 

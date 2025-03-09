@@ -1,12 +1,11 @@
+'server-only'
 import axios, { AxiosHeaders, AxiosInstance } from "axios";
-import { auth } from '@clerk/nextjs/server'
+import { useAuth } from "@clerk/nextjs";
 
 var httpInstance: AxiosInstance | undefined;
 
 async function getToken () {
-  const { getToken } = await auth()
-
-  return getToken
+  
 }
 
 export const HttpClient = (): AxiosInstance => {
@@ -28,7 +27,7 @@ export const HttpClient = (): AxiosInstance => {
 
   const instance = axios.create({
     headers,
-    withCredentials: true,
+    //withCredentials: true,
     baseURL:
       process.env.NEXT_PUBLIC_API_URL,
   });

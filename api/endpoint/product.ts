@@ -1,21 +1,67 @@
-import { getRequest, paramsProps } from "../services";
+import { HttpClient } from "../httpClient";
+import { paramsProps } from "../services";
+import { handleError } from "../toast";
 
-export function useProduct (params:paramsProps, g_params?: paramsProps) {
-    const p_product = getRequest('/api/public/products', g_params);
-    const u_product = getRequest('/api/user/products', g_params);
+export async function get_public_product (params?: paramsProps) {
+return await HttpClient()
+  .get("/api/public/products", {
+    params: params ? params : undefined,
+  })
+  .then((response) => {
+    return response.data.data;
+  })
+  .catch((error) => {
+    handleError(error);
+  })
+};
 
-    const subCategories = getRequest("/api/user/subcategories");
-    const collections = getRequest("/api/user/collections");
-    const tags = getRequest("/api/user/tags");
-    const categories = getRequest("/api/user/categories");
-    const images = getRequest("/api/user/images");
-    const colors = getRequest("/api/user/colors");
-    const stores = getRequest("/api/user/stores");
-    const brands = getRequest("/api/user/brands");
+export async function get_user_product (params?: paramsProps) {
+    return await HttpClient()
+      .get("/api/user/products", {
+        params: params ? params : undefined,
+      })
+      .then((response) => {
+        return response.data.data;
+      })
+      .catch((error) => {
+        handleError(error);
+      })
+    };
 
+export const getImages = async (params?: paramsProps) => {
+      return await HttpClient()
+        .get("/api/user/images",{
+          params: params ? params : undefined,
+        })
+        .then((response) => {return response.data.data;})
+        .catch((error) => {
+          handleError(error);
+        })
+    };
 
-    return {
-        p_product,
-        u_product
-    }
+export const getColors = async (params?: paramsProps) => {
+  return await HttpClient()
+    .get("/api/user/colors",{
+      params: params ? params : undefined,
+    })
+    .then((response) => {return response.data.data;})
+    .catch((error) => {
+      handleError(error);
+    })
+};
+
+export const getSizes = async (params?: paramsProps) => {
+  return await HttpClient()
+    .get("/api/user/sizes",{
+      params: params ? params : undefined,
+    })
+    .then((response) => {return response.data.data;})
+    .catch((error) => {
+      handleError(error);
+    })
+};
+
+export function useProduct (params:paramsProps) {
+
+    
 }

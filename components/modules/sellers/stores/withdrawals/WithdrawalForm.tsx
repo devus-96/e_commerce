@@ -20,7 +20,7 @@ import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/custom/Loading";
 import CurrencyFormat from "@/components/custom/CurrencyFormat";
 import { TypeOrderItemModel } from "@/types/models";
-import { useWithdrawals } from "@/api/endpoint/withDrawals";
+import { getWithdrawal, useWithdrawals } from "@/api/endpoint/withDrawals";
 
 export default function WithdrawalForm({
   _id,
@@ -35,13 +35,7 @@ export default function WithdrawalForm({
   const [isLoading, setLoading] = useState(false);
   const [withdrawalData, setData] = useState<WithdrawalFormData>();
   const { userId } = useAuth();
-  const {
-      withdrawals,
-      create,
-      isCreating,
-      update,
-      isUpdating,
-  } = useWithdrawals({ _id: _id }, { _id: _id })
+  const {create, update, isCreating, isUpdating} = useWithdrawals({ _id: _id })
 
   const _earnings = earnings.reduce(
     (total: number, currentValue: TypeOrderItemModel) =>
@@ -59,9 +53,9 @@ export default function WithdrawalForm({
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      withdrawals.then((response) => {
-        setData(response.data.data);
-        form.reset(response.data.data);
+      getWithdrawal({ _id: _id }).then((response) => {
+        setData(response);
+        form.reset(response);
       }).finally(() => {
         setLoading(false);
       });

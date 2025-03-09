@@ -11,9 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { WithdrawalFormData } from "@/types/forms";
@@ -29,13 +27,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { statusWithdrawals } from "@/constants";
-import { toast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { Info } from "lucide-react";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/custom/Loading";
+import { getWithdrawal, useWithdrawals } from "@/api/endpoint/withDrawals";
 
 export default function WithdrawalForm({
   _id,
@@ -47,71 +45,8 @@ export default function WithdrawalForm({
   // 1. set state
   const [isLoading, setLoading] = useState(false);
   const [withdrawal, setData] = useState<WithdrawalFormData>();
-  const router = useRouter();
   const { userId } = useAuth();
-  const { getToken } = useAuth();
-
-  // 2. Form method
-  async function postRequest(
-    url: string,
-    { arg }: { arg: WithdrawalFormData }
-  ) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {
-        router.refresh();
-      });
-  }
-  async function putRequest(url: string, { arg }: { arg: WithdrawalFormData }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: _id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  // 3. Set Form mutation
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/user/withdrawals",
-    postRequest /* options */
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/user/withdrawals",
-    putRequest /* options */
-  );
+  const {create, update, isCreating, isUpdating} = useWithdrawals({ _id: _id })
 
   // 4. Define your validation and default values.
   const form = useForm<z.infer<typeof withdrawalValidationSchema>>({
@@ -123,18 +58,10 @@ export default function WithdrawalForm({
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/user/withdrawals", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getWithdrawal({ _id: _id })
         .then((response) => {
-          setData(response.data.data);
-          form.reset(response.data.data);
+          setData(response);
+          form.reset(response);
         })
         .catch((error) => {
           console.log(error);

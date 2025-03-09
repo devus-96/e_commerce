@@ -1,7 +1,6 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import Link from "next/link";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
@@ -13,7 +12,7 @@ import {
   TypeSubscriptionModel,
 } from "@/types/models";
 import { format } from "date-fns";
-import { useAuth } from "@clerk/nextjs";
+import { getAdminSubscription } from "@/api/endpoint/subscription";
 
 export default function Subscriptions({ _id }: { _id?: string }) {
   // 1. set state
@@ -21,33 +20,22 @@ export default function Subscriptions({ _id }: { _id?: string }) {
   const [subscription, setData] = useState<TypeSubscriptionModel>();
   const [store, setStore] = useState<TypeStoreModel>();
   const [payments, setPayments] = useState<TypePaymentModel[]>();
-  const { getToken } = useAuth();
 
   // 5. Reset form default values if edit
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      const token = await getToken();
-
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/subscriptions", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setData(response.data.data);
-          setStore(response.data.data.store);
-          setPayments(response.data.data.payments);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getAdminSubscription().then((response) => {
+        setData(response.data.data);
+        setStore(response.data.data.store);
+        setPayments(response.data.data.payments);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
     };
     if (_id) {
         getData();

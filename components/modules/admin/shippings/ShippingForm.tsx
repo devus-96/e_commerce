@@ -11,9 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShippingFormData } from "@/types/forms";
@@ -31,8 +29,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { regions, status } from "@/constants";
-import { ToastAction } from "@/components/ui/toast";
-import { toast } from "@/hooks/use-toast";
 import { slugString } from "@/lib/helpers";
 import Link from "next/link";
 import { Check, ChevronsUpDown, Info } from "lucide-react";
@@ -55,6 +51,7 @@ import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/custom/Loading";
+import { getAdminShipping, use_admin_shipping } from "@/api/endpoint/admin_shippings";
 
 export default function ShippingForm({ _id }: { _id?: string }) {
   // 1. set state
@@ -64,77 +61,7 @@ export default function ShippingForm({ _id }: { _id?: string }) {
   const { userId, getToken } = useAuth();
   const [value, setValue] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
-
-  // 2. Form method
-  async function postRequest(url: string, { arg }: { arg: ShippingFormData }) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/shippings/${data.data._id}`}>
-                Go to {data.data.name}
-              </Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {
-        router.refresh();
-      });
-  }
-  async function putRequest(url: string, { arg }: { arg: ShippingFormData }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: shipping?._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/shippings`}>Go to List</Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  // 3. Set Form mutation
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/admin/shippings",
-    postRequest /* options */
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/admin/shippings",
-    putRequest /* options */
-  );
+  const { create, update, isCreating, isUpdating} = use_admin_shipping()
 
   // 4. Define your validation and default values.
   const form = useForm<z.infer<typeof shippingValidationSchema>>({
@@ -162,15 +89,7 @@ export default function ShippingForm({ _id }: { _id?: string }) {
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/shippings", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
+      getAdminShipping({ _id: _id })
         .then((response) => {
           setData(response.data.data);
           setValue(response.data.data.region);

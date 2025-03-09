@@ -7,13 +7,13 @@ import { useWithdrawals } from "@/api/endpoint/withDrawals";
 
 export default function Withdrawals({ store }: { store: string }) {
   // fecthing client
-  const {data, isLoading} = useWithdrawals({ store: store })
+  const {withdrawals, loading,} = useWithdrawals({ store: store })
 
-  if (isLoading) return <Loading loading={true} />;
+  if (loading) return <Loading loading={true} />;
 
   return (
     <>
-      <DataTable searchKey="name" columns={columns} data={data ? data : []} />;
+      <DataTable searchKey="name" columns={columns} data={withdrawals ? withdrawals : []} />;
     </>
   );
 }

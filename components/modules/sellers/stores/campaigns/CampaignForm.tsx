@@ -22,9 +22,9 @@ import Loading from "@/components/custom/Loading";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { useCampaigns } from "@/api/endpoint/campaign";
-import { useSlides } from "@/api/endpoint/slides";
-import { useProduct } from "@/api/endpoint/product";
+import { getCampaign, useCampaigns } from "@/api/endpoint/campaign";
+import { getSlides } from "@/api/endpoint/slides";
+import { get_public_product } from "@/api/endpoint/product";
 
 export default function CampaignForm({
   storeId,
@@ -39,25 +39,27 @@ export default function CampaignForm({
   const [isLoading, setLoading] = useState(false);
   const [slideitem, setData] = useState<SlideitemFormData>();
   const { userId } = useAuth();
-  const {campaings, create, isCreating, update, isUpdating} = useCampaigns({ _id: slideitem?._id }, { _id: _id }, storeId)
-  const {p_slides} = useSlides();
-  const {p_product} = useProduct({storeId: storeId})
+  const {paramsRef, create, isCreating, update, isUpdating} = useCampaigns()
 
   // 1. Fetching slides
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      p_slides.then((response) => {
-        setSlides(response.data.data);
-      }).finally(() => {
+      getSlides().then((response) => {
+        setSlides(response);
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+      .finally(() => {
         setLoading(false);
       })
     };
 
     const getProducts = async () => {
       setLoading(true);
-      p_product.then((response) => {
-        setProducts(response.data.data);
+      get_public_product({storeId: storeId}).then((response) => {
+        setProducts(response);
       }).finally(() => {
         setLoading(false);
       })
@@ -87,9 +89,10 @@ export default function CampaignForm({
   useEffect(() => {
     setLoading(true);
     if (_id) {
-      campaings.then((response) => {
-        setData(response.data.data);
-        form.reset(response.data.data);
+      getCampaign({storeId: storeId}).then((response) => {
+        setData(response);
+        form.reset(response);
+        paramsRef.current = {_id: response._id}
       }).finally(() => {
         setLoading(false);
       })

@@ -4,45 +4,30 @@ import { Button } from "@/components/ui/button";
 import { subscriptionPlan } from "@/constants";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { CheckoutFormData } from "@/types/forms";
 import { TypeSubscriptionModel } from "@/types/models";
 import { useAuth } from "@clerk/nextjs";
-import axios from "axios";
 import { Check } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { checkoutValidationSchema } from "@/types/schemas";
 import { z } from "zod";
-import getStripe from "@/lib/get-stripejs";
 import { useRouter } from "next/navigation";
 import { TypeSubscriptionPlan } from "@/types";
 import Loading from "@/components/custom/Loading";
+import { getUserSubscription, useSubscriptions } from "@/api/endpoint/subscription";
 
 export default function Pricing() {
   const { userId } = useAuth();
   const router = useRouter();
   const [isLoading, setLoading] = useState(false);
   const [subscription, setSubscription] = useState<TypeSubscriptionModel>();
-  const { getToken } = useAuth();
+  const {createSubcription, isCreatingSubscription} = useSubscriptions()
 
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(
-          process.env.NEXT_PUBLIC_API_URL +
-            "/api/user/subscriptions?user_id=" +
-            userId,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
+      getUserSubscription({user_id: userId})
         .then((response) => {
           setSubscription(response.data.data);
         })
@@ -55,43 +40,6 @@ export default function Pricing() {
     };
     getData();
   }, []);
-
-  async function postRequest(url: string, { arg }: { arg: CheckoutFormData }) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then(async (response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "OK...✔️",
-          description: data.message,
-        });
-
-        const stripe = await getStripe();
-        await stripe!.redirectToCheckout({
-          // Make the id field from the Checkout Session creation API response
-          // available to this file, so you can provide it as parameter here
-          // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
-          sessionId: response.data.id,
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  // 1. Get user and set api
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/user/subscriptions",
-    postRequest /* options */
-  );
 
   // 2. Define your validation.
   const form = useForm<z.infer<typeof checkoutValidationSchema>>({
@@ -121,7 +69,7 @@ export default function Pricing() {
       user_id: userId ? userId : "",
       amount: subscriptionPlan[1].price,
     };
-    await create(data);
+    await createSubcription(data);
   };
 
   return (
@@ -184,7 +132,7 @@ export default function Pricing() {
                             "bg-white text-black border border-border hover:text-white"
                         )}
                         disabled={
-                          isCreating ||
+                          isCreatingSubscription ||
                           isLoading ||
                           subscription?.type === item.type
                         }

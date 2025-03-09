@@ -42,46 +42,15 @@ import "react-medium-image-zoom/dist/styles.css";
 import { orderStatus, trackingStatus } from "@/constants";
 import { addDays } from "date-fns";
 import Image from "next/image";
+import { putTrackOrder, useOrder } from "@/api/endpoint/order";
 
 export default function OrderForm({ order }: { order: TypeOrderItemModel }) {
   const { getToken } = useAuth();
-  async function putRequest(url: string, { arg }: { arg: { status: string } }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: order._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then(async (response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done",
-          description: data.message,
-        });
-      })
-      .catch((err) => {
-        toast({
-          variant: "default",
-          title: "OOps ❌",
-          description: err.message,
-        });
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/user/orderitems",
-    putRequest /* options */
-  );
+  const {update, isUpdating} = useOrder({ _id: order._id })
 
   const form = useForm<z.infer<typeof statusValidationSchema>>({
     resolver: zodResolver(statusValidationSchema),
-    defaultValues: { status: order.status },
+    defaultValues: { status: order.status }
   });
 
   const onSubmit = async (values: z.infer<typeof statusValidationSchema>) => {
@@ -93,26 +62,13 @@ export default function OrderForm({ order }: { order: TypeOrderItemModel }) {
 
   const updateTrackOrder = async (e: string) => {
     const token = await getToken();
-    await axios
-      .put(
-        process.env.NEXT_PUBLIC_API_URL + "/api/user/trackorders",
-        { status: e },
-        {
-          params: { _id: order.trackorder._id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done",
-          description: data.message,
-        });
+    putTrackOrder({ _id: order.trackorder._id }, { status: e }).then((response) => {
+      toast({
+        variant: "default",
+        title: "Well done",
+        description: response?.message,
       });
+    })
   };
 
   return (

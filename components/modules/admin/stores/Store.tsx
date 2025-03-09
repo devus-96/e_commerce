@@ -9,8 +9,6 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import axios from "axios";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { storeValidationSchema } from "@/types/schemas";
@@ -23,86 +21,43 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { storeStatus } from "@/constants";
-import { ToastAction } from "@/components/ui/toast";
-import { toast } from "@/hooks/use-toast";
 import { TypeStoreModel } from "@/types/models";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { StoreFormData } from "@/types/forms";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
-import { useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import Loading from "@/components/custom/Loading";
 import { useAuth } from "@clerk/nextjs";
+import { getStore, useStore } from "@/api/endpoint/store";
+import { useRouter } from "next/navigation";
 
 export default function Store({ _id }: { _id: string }) {
   const [isLoading, setLoading] = useState(false);
   const [store, setData] = useState<TypeStoreModel>();
   const { getToken } = useAuth();
-
+  const router = useRouter();
+  const {paramsRef, update, isUpdating} = useStore()
+ 
   useEffect(() => {
     const getData = async () => {
       const token = await getToken();
       setLoading(true);
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/stores?", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setData(response.data.data);
-          form.reset(response.data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getStore({ _id: _id }).then((response) => {
+        setData(response);
+        form.reset(response);
+        paramsRef.current = {_id: response._id}
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
     };
     getData();
   }, []);
-  const router = useRouter();
-
-  async function putRequest(url: string, { arg }: { arg: StoreFormData }) {
-    const token = await getToken();
-
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { storeId: store?._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/stores`}>Go to List</Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/admin/stores",
-    putRequest /* options */
-  );
 
   // 2. Define your validation.
   const form = useForm<z.infer<typeof storeValidationSchema>>({

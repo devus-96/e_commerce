@@ -10,10 +10,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SlideFormData } from "@/types/forms";
@@ -31,8 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { status } from "@/constants";
-import { ToastAction } from "@/components/ui/toast";
-import { toast } from "@/hooks/use-toast";
 import { slugString } from "@/lib/helpers";
 import Link from "next/link";
 import { Info } from "lucide-react";
@@ -40,89 +35,14 @@ import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/custom/Loading";
+import { getSlide, useSlide } from "@/api/endpoint/slides";
 
 export default function SlideForm({ _id }: { _id?: string }) {
   // 1. set state
   const [isLoading, setLoading] = useState(false);
   const [slide, setData] = useState<SlideFormData>();
-  const router = useRouter();
-  const { userId, getToken } = useAuth();
-
-  // 2. Form method
-  async function postRequest(url: string, { arg }: { arg: SlideFormData }) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/slides/${data.data._id}`}>
-                Go to {data.data.name.substring(0, 20)}
-              </Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        toast({
-          variant: "destructive",
-          title: "Oups something wen wrong ✔️",
-          description: err.message,
-        });
-        console.log(err.message);
-      })
-      .finally(() => {
-        router.refresh();
-      });
-  }
-  async function putRequest(url: string, { arg }: { arg: SlideFormData }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: slide?._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/slides`}>Go to List</Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  // 3. Set Form mutation
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/admin/slides",
-    postRequest /* options */
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/admin/slides",
-    putRequest /* options */
-  );
+  const { userId } = useAuth();
+  const { paramsRef, create, isUpdating, update, isCreating} = useSlide()
 
   // 4. Define your validation and default values.
   const form = useForm<z.infer<typeof slideValidationSchema>>({
@@ -141,28 +61,18 @@ export default function SlideForm({ _id }: { _id?: string }) {
   // 5. Reset form default values if edit
   useEffect(() => {
     const getData = async () => {
-      const token = await getToken();
-      setLoading(true);
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/slides", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          const data = response.data;
-          setData(data.data);
-          form.reset(data.data);
-          console.log("___",data)
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getSlide({ _id: _id }).then((response) => {
+        const data = response.data;
+        setData(data.data);
+        form.reset(data.data);
+        paramsRef.current = {_id: response._id}
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
     };
     if (_id) {
         getData();

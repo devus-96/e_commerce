@@ -11,12 +11,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { BrandFormData, TagFormData } from "@/types/forms";
+import { TagFormData } from "@/types/forms";
 import { tagValidationSchema } from "@/types/schemas";
 import { z } from "zod";
 import ImageUpload from "@/components/custom/ImageUpload";
@@ -31,92 +29,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { status } from "@/constants";
-import { ToastAction } from "@/components/ui/toast";
-import { toast } from "@/hooks/use-toast";
 import { slugString } from "@/lib/helpers";
 import Link from "next/link";
 import { ChevronLeft, Info } from "lucide-react";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import Loading from "@/components/custom/Loading";
+import { getTag, useTag } from "@/api/endpoint/tags";
 
 export default function TagForm({ _id }: { _id?: string }) {
   // 1. set state
   const [isLoading, setLoading] = useState(false);
   const [tag, setData] = useState<TagFormData>();
-  const router = useRouter();
-  const { userId, getToken } = useAuth();
-
-  // 2. Form method
-  async function postRequest(url: string, { arg }: { arg: BrandFormData }) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/tags/${data.data._id}`}>
-                Go to {data.data.name}
-              </Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {
-        router.refresh();
-      });
-  }
-  async function putRequest(url: string, { arg }: { arg: BrandFormData }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: tag?._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/tags`}>Go to List</Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  // 3. Set Form mutation
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/admin/tags",
-    postRequest /* options */
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/admin/tags",
-    putRequest /* options */
-  );
+  const { userId } = useAuth();
+  const {paramsRef, create, isCreating, update, isUpdating,} = useTag()
 
   // 4. Define your validation and default values.
   const form = useForm<z.infer<typeof tagValidationSchema>>({
@@ -135,25 +61,17 @@ export default function TagForm({ _id }: { _id?: string }) {
   // 5. Reset form default values if edit
   useEffect(() => {
     const getData = async () => {
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/tags", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setData(response.data.data);
-          form.reset(response.data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getTag({ _id: _id }).then((response) => {
+        setData(response);
+        form.reset(response);
+        paramsRef.current = {_id: response._id}
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });  
     };
     if (_id) {
         getData();

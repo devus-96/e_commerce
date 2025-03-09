@@ -11,9 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PageFormData } from "@/types/forms";
@@ -31,94 +29,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { status } from "@/constants";
-import { ToastAction } from "@/components/ui/toast";
-import { toast } from "@/hooks/use-toast";
 import { slugString } from "@/lib/helpers";
 import Link from "next/link";
 import { ChevronLeft, Info } from "lucide-react";
 import Loading from "@/components/custom/Loading";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
+import { getPage, usePage } from "@/api/endpoint/page";
 
 export default function PageForm({ _id }: { _id?: string }) {
   // 1. set state
   const [isLoading, setLoading] = useState(false);
   const [page, setData] = useState<PageFormData>();
-  const router = useRouter();
-  const { userId, getToken } = useAuth();
+  const { userId } = useAuth();
+  const {paramsRef, create, update, isCreating, isUpdating} = usePage()
 
-  // 2. Form method
-  async function postRequest(url: string, { arg }: { arg: PageFormData }) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/pages/${data.data._id}`}>
-                Go to {data.data.name}
-              </Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {
-        router.refresh();
-      });
-  }
-  async function putRequest(url: string, { arg }: { arg: PageFormData }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: page?._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        const data = response.data;
-        toast({
-          variant: "default",
-          title: "Well done ✔️",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={`/admin/pages`}>Go to List</Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => {
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-
-  // 3. Set Form mutation
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/admin/pages",
-    postRequest /* options */
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/admin/pages",
-    putRequest /* options */
-  );
-
-  // 4. Define your validation and default values.
+  //Define your validation and default values.
   const form = useForm<z.infer<typeof pageValidationSchema>>({
     resolver: zodResolver(pageValidationSchema),
     defaultValues: page
@@ -136,25 +62,13 @@ export default function PageForm({ _id }: { _id?: string }) {
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/pages", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((response) => {
-          setData(response.data.data);
-          form.reset(response.data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getPage({ _id: _id }).then((response) => {
+          setData(response);
+          form.reset(response);
+          paramsRef.current = {_id: response._id}
+      }).finally(() => {
+        setLoading(false);
+      });
     };
     if (_id) {
         getData();

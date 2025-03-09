@@ -1,46 +1,31 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import Loading from "@/components/custom/Loading";
 import Container from "@/components/custom/Container";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 //@ts-expect-error: this package do not have type
 import SimpleDateTime from "react-simple-timestamp-to-date";
-import { useAuth } from "@clerk/nextjs";
+import { getUserSubscription } from "@/api/endpoint/subscription";
 
 export default function PaymentCompleted() {
   const router = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const { getToken } = useAuth();
   const [data, setData] = useState<any>();
 
   // Api call using use effect
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      const token = await getToken();
-      await axios
-        .get(
-          process.env.NEXT_PUBLIC_API_URL +
-            "/api/user/subscriptions?session_id=" +
-            router.get("session_id"),
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .then((response) => {
-          setData(response.data.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+      getUserSubscription({session_id: router.get("session_id")}).then((response) => {
+        setData(response);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
     };
 
     if (router.get("session_id")) getData();

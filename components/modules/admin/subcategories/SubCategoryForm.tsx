@@ -3,11 +3,8 @@
 import { z } from "zod";
 import Heading from "@/components/custom/Heading";
 import { Separator } from "@/components/ui/separator";
-import { ToastAction } from "@/components/ui/toast";
-import { toast } from "@/hooks/use-toast";
 import { SubcategoryValidationSchema } from "@/types/schemas";
 import { useAuth } from "@clerk/nextjs";
-import axios from "axios";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -29,9 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import useSWRMutation from "swr/mutation";
-import { TypeCategoryModel } from "@/types/models";
-import useSWR, { Fetcher } from "swr";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,11 +35,12 @@ import { status } from "@/constants";
 import { slugString } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubcategoryFormData } from "@/types/forms";
+import { getSubcategory, useSubCategory } from "@/api/endpoint/subCategorie";
+import { useCategory } from "@/api/endpoint/category";
 
 export default function SubCategoryForm({ _id }: { _id?: string }) {
   const [isLoading, setIsLoading] = useState(false);
-  const { getToken } = useAuth();
-  const router = useRouter();
+  const {paramsRef, create, update, isCreating, isUpdating} = useSubCategory()
   //states
   const [subcategory, setData] = useState<SubcategoryFormData>();
   const { userId } = useAuth();
@@ -86,103 +81,8 @@ export default function SubCategoryForm({ _id }: { _id?: string }) {
     }
   };
 
-  // Form method request
-  async function postRequest(
-    url: string,
-    { arg }: { arg: SubcategoryFormData }
-  ) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        const data = res.data;
-        toast({
-          title: "Well done!",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={` /admin/subcategories/${data.data._id} `}>
-                Go to {data.data.name}
-              </Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => console.log(err))
-      .finally(() => {
-        router.refresh();
-      });
-  }
-  async function putRequest(
-    url: string,
-    { arg }: { arg: SubcategoryFormData }
-  ) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: {
-          _id: subcategory?._id,
-        },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => {
-        const data = res.data;
-        toast({
-          title: "Well done!",
-          description: data.message,
-          action: (
-            <ToastAction altText={`Go to ${data.data.name}`}>
-              <Link href={` /admin/subcategories/${data.data._id} `}>
-                Go to {data.data.name}
-              </Link>
-            </ToastAction>
-          ),
-        });
-      })
-      .catch((err) => console.log(err))
-      .finally(() => {
-        router.refresh();
-      });
-  }
-
-  // SWR Trigger
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/admin/subcategories",
-    postRequest
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/admin/subcategories",
-    putRequest
-  );
-
-  //fetching categories
-  const fetcher: Fetcher<TypeCategoryModel[], string> = async (url) => {
-    const token = await getToken();
-    return await axios
-      .get(url, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => res.data.data)
-      .catch((err) => console.log(err))
-      .finally(() => {});
-  };
-
   //get categories
-  const categories = useSWR<TypeCategoryModel[]>(
-    process.env.NEXT_PUBLIC_API_URL + "/api/admin/categories",
-    fetcher
-  );
+  const categories = useCategory()
 
   // slug
   const createSlug = (v: string) => {
@@ -194,21 +94,13 @@ export default function SubCategoryForm({ _id }: { _id?: string }) {
   useEffect(() => {
     const getData = async () => {
       setIsLoading(true);
-      const token = await getToken();
-      await axios
-        .get(process.env.NEXT_PUBLIC_API_URL + "/api/admin/subcategories", {
-          params: { _id: _id },
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        })
-        .then((res) => {
-          setData(res.data.data);
-          form.reset(res.data.data);
-        })
-        .then((err) => console.log(err))
-        .finally(() => setIsLoading(false));
+      getSubcategory({ _id: _id }).then((res) => {
+        setData(res.data.data);
+        form.reset(res.data.data);
+        paramsRef.current = {_id: res._id}
+      })
+      .then((err) => console.log(err))
+      .finally(() => setIsLoading(false));  
     };
 
     getData();

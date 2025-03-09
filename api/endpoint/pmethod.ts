@@ -1,31 +1,45 @@
 import useSWRMutation from "swr/mutation";
-import { getRequest, paramsProps, postRequest, putRequest, searchResquest } from "../services";
+import { paramsProps, postRequest, putRequest, fetcher } from "../services";
 import { PmethodFormData } from "@/types/forms";
 import useSWR from "swr";
 import { Pmethod } from "@/components/modules/admin/pmethods/columns";
+import { HttpClient } from "../httpClient";
+import { handleError } from "../toast";
+import { useRef } from "react";
 
-export function usePmethod (params: paramsProps, g_params?:paramsProps) {
-    const pmethod = getRequest("/api/admin/pmethods", g_params); 
+export async function getPmethod (params?: paramsProps) {
+return await HttpClient()
+  .get("/api/admin/pmethods", {
+    params: params ? params : undefined,
+  })
+  .then((response) => {
+    return response.data.data;
+  })
+  .catch((error) => {
+    handleError(error);
+  })
+};
+
+export function usePmethod (params?: paramsProps) {
+    const paramsRef = useRef<paramsProps | undefined>(undefined)
 
     const { trigger: create, isMutating: isCreating } = useSWRMutation(
         '/api/admin/pmethods',
-        (url, { arg }) => postRequest<PmethodFormData>(url, { arg }) // Passer l'ID de la commande
+        (url, { arg }: {arg: PmethodFormData}) => postRequest<PmethodFormData>(url, { arg }) // Passer l'ID de la commande
     );
 
     const { trigger: update, isMutating: isUpdating } = useSWRMutation(
         "/api/admin/pmethods",
-        (url, { arg }) => putRequest<PmethodFormData>(url, params, { arg }) // Passer l'ID de la commande
+        (url, { arg }: {arg: PmethodFormData}) => putRequest<PmethodFormData>(url, paramsRef.current, { arg }) // Passer l'ID de la commande
     );
-
-    const fetcher = searchResquest<Pmethod>(params)
 
     const { data, isLoading } = useSWR<Pmethod[]>(
         "/api/admin/pmethods",
-        fetcher
+        fetcher<Pmethod>(params)
     );
 
     return { 
-        pmethod,
+        paramsRef,
         create,
         isCreating,
         update,

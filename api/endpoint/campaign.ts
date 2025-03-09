@@ -1,12 +1,27 @@
 import useSWRMutation from "swr/mutation";
-import { getRequest, paramsProps, postRequest, putRequest, searchResquest } from "../services";
+import { paramsProps, postRequest, putRequest, fetcher } from "../services";
 import useSWR from "swr";
 import { TypeSlideItemModel } from "@/types/models";
 import { SlideitemFormData } from "@/types/forms";
+import { HttpClient } from "../httpClient";
+import { handleError } from "../toast";
+import { useRef } from "react";
 
+export async function getCampaign (params?: paramsProps) {
+return await HttpClient()
+  .get("/api/user/campaigns", {
+    params: params ? params : undefined,
+  })
+  .then((response) => {
+    return response.data.data;
+  })
+  .catch((error) => {
+    handleError(error);
+  })
+};
 
-export function useCampaigns (params: paramsProps, g_params?:paramsProps, storeId?:string) {
-    const campaings = getRequest('/api/user/campaigns', g_params)
+export function useCampaigns (params?: paramsProps, storeId?:string) {
+    const paramsRef = useRef<paramsProps | undefined>(undefined)
 
     const { trigger: create, isMutating: isCreating } = useSWRMutation(
         '/api/user/campaigns',
@@ -15,22 +30,21 @@ export function useCampaigns (params: paramsProps, g_params?:paramsProps, storeI
 
     const { trigger: update, isMutating: isUpdating } = useSWRMutation(
         "/api/user/campaigns",
-        (url, { arg }: {arg: SlideitemFormData}) => putRequest<SlideitemFormData>(url, params, { arg }, `/stores/${storeId}/campaigns`) // Passer l'ID de la commande
+        (url, { arg }: {arg: SlideitemFormData}) => putRequest<SlideitemFormData>(url, paramsRef.current, { arg }, `/stores/${storeId}/campaigns`) // Passer l'ID de la commande
       );
 
-    const fetcher = searchResquest<TypeSlideItemModel>(params)
 
     const { data, isLoading } = useSWR<TypeSlideItemModel[]>(
         "/api/user/campaigns",
-        fetcher
+        fetcher<TypeSlideItemModel>(params)
     );
 
     return {
-        campaings,
         create,
         isCreating,
         update,
         isUpdating,
+        paramsRef,
         data,
         isLoading,
     }

@@ -7,9 +7,9 @@ import { redirect } from "next/navigation";
 export const revalidate = false;
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
-    if ((await checkRole("admin")) === false) {
+    /*if ((await checkRole("admin")) === false) {
         redirect("/stores");
-      }
+    }*/
     return (
     <>
       <Header />

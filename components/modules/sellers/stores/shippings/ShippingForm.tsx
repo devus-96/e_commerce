@@ -25,7 +25,8 @@ import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { ChevronLeft } from "lucide-react";
 import Loading from "@/components/custom/Loading";
-import { use_user_shipping } from "@/api/endpoint/u_shippings";
+import { use_user_shipping } from "@/api/endpoint/user_shippings";
+import { getCampaign } from "@/api/endpoint/campaign";
 
 export default function ShippingForm({
   _id,
@@ -40,7 +41,7 @@ export default function ShippingForm({
   const { userId } = useAuth();
   const [value, setValue] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
-  const {shipping, create, isCreating, update, isUpdating } = use_user_shipping({ _id: shippingData?._id }, {store: store, _id: _id});
+  const {paramsRef, create, isCreating, update, isUpdating } = use_user_shipping();
 
   // 4. Define your validation and default values.
   const form = useForm<z.infer<typeof shippingValidationSchema>>({
@@ -69,10 +70,11 @@ export default function ShippingForm({
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      shipping.then((response) => {
-          setData(response.data.data);
-          setValue(response.data.data.region);
-          form.reset(response.data.data);
+      getCampaign().then((response) => {
+          setData(response);
+          setValue(response?.region);
+          form.reset(response);
+          paramsRef.current = {_id: response._id}
       }).finally(() => {
         setLoading(false);
       });

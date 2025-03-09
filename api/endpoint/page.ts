@@ -1,31 +1,45 @@
 import useSWRMutation from "swr/mutation";
-import { getRequest, paramsProps, postRequest, putRequest, searchResquest } from "../services";
+import { paramsProps, postRequest, putRequest, fetcher } from "../services";
 import { PageFormData } from "@/types/forms";
 import useSWR from "swr";
 import { Page } from "@/components/modules/admin/pages/columns";
+import { HttpClient } from "../httpClient";
+import { handleError } from "../toast";
+import { useRef } from "react";
 
-export function usePage (params: paramsProps, g_params?:paramsProps) {
-    const page = getRequest("/api/admin/pages", g_params); 
+export async function getPage (params: paramsProps) {
+return await HttpClient()
+  .get("/api/admin/pages", {
+    params: params ? params : undefined,
+  })
+  .then((response) => {
+    return response.data.data;
+  })
+  .catch((error) => {
+    handleError(error);
+  })
+};
+
+export function usePage (params?: paramsProps) {
+    const paramsRef = useRef<paramsProps | undefined>(undefined)
 
     const { trigger: create, isMutating: isCreating } = useSWRMutation(
         '/api/admin/pages',
-        (url, { arg }) => postRequest<PageFormData>(url, { arg }) // Passer l'ID de la commande
+        (url, { arg }: {arg: PageFormData}) => postRequest<PageFormData>(url, { arg }) // Passer l'ID de la commande
     );
 
     const { trigger: update, isMutating: isUpdating } = useSWRMutation(
         "/api/admin/pages",
-        (url, { arg }) => putRequest<PageFormData>(url, params, { arg }) // Passer l'ID de la commande
+        (url, { arg }: {arg: PageFormData}) => putRequest<PageFormData>(url, paramsRef.current, { arg }) // Passer l'ID de la commande
     );
-
-    const fetcher = searchResquest<Page>(params)
 
     const { data, isLoading } = useSWR<Page[]>(
         "/api/admin/pages",
-        fetcher
+        fetcher<Page>(params)
     );
 
     return { 
-        page,
+        paramsRef,
         create,
         isCreating,
         update,

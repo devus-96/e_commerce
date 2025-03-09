@@ -35,9 +35,8 @@ import { StoreCreateForm } from "./StoreCreateForm";
 import { TypeStoreModel } from "@/types/models";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import axios from "axios";
 import Loading from "@/components/custom/Loading";
-import useSWR, { Fetcher } from "swr";
+import { useStore } from "@/api/endpoint/store";
 
 export default function StoreModal({
   storeId,
@@ -50,27 +49,8 @@ export default function StoreModal({
   const [value, setValue] = React.useState(storeId);
   const [openAddStore, setOpenAddStore] = useState(false);
   const router = useRouter();
-  const { userId, getToken } = useAuth();
-
-  const fetcher: Fetcher<TypeStoreModel[], string> = async (url) => {
-    const token = await getToken();
-
-    return await axios
-      .get(url, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => res.data.data)
-      .catch((err) => console.log(err))
-      .finally(() => {});
-  };
-
-  const { data: stores, isLoading } = useSWR<TypeStoreModel[]>(
-    process.env.NEXT_PUBLIC_API_URL + "/api/user/stores?userId=" + userId,
-    fetcher
-  );
+  const { userId } = useAuth();
+  const { data, isLoading} = useStore({userId: userId})
 
   if (isLoading) return <Loading loading={true} />;
 
@@ -87,8 +67,8 @@ export default function StoreModal({
             <DoorOpen />
             <h6 className="font-bold text-[14px] capitalize">
               {value
-                ? stores &&
-                  stores
+                ? data &&
+                  data
                     .find((item: TypeStoreModel) => item._id === value)
                     ?.name.substring(0, 15)
                 : "Select a store..."}
@@ -102,8 +82,8 @@ export default function StoreModal({
             <CommandList>
               <CommandEmpty>No store found.</CommandEmpty>
               <CommandGroup>
-                {stores &&
-                  stores.map((framework: TypeStoreModel) => (
+                {data &&
+                  data.map((framework: TypeStoreModel) => (
                     <CommandItem
                       key={framework._id}
                       value={framework._id}
