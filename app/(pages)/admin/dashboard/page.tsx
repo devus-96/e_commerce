@@ -1,4 +1,5 @@
-import { getEarnings, getSellers, getSubscriptions } from "@/actions/stores";
+import { getStore } from "@/api/endpoint/store";
+import { getAdminSubscription, getPayments } from "@/api/endpoint/subscription";
 import Container from "@/components/custom/Container";
 import Dashboard from "@/components/modules/admin/dashboard";
 import React from "react";
@@ -7,9 +8,9 @@ import React from "react";
 export const revalidate = 3600; //every 1 hour refetch data
 
 export default async function page() {
-  const sellers = await getSellers();
-  const members = await getSubscriptions();
-  const earnings = await getEarnings();
+  const sellers = await getStore();
+  const members = await getAdminSubscription();
+  const earnings = await getPayments({type: "subscription"});
   return (
     <section className="py-10">
       <Container>

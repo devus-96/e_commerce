@@ -61,7 +61,7 @@ export const getSizes = async (params?: paramsProps) => {
     })
 };
 
-export function useProduct (params:paramsProps) {
+/*export function useProduct (params:paramsProps) {
 
     
-}
+}*/

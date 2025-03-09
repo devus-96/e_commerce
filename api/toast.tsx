@@ -1,8 +1,10 @@
+import React from "react";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@radix-ui/react-toast";
 import Link from "next/link";
+import { AxiosError, AxiosResponse } from "axios";
 
-export const handleError = (error: any) => {
+export const handleError = (error: AxiosError) => {
     toast({
       variant: 'default',
       title: 'OOps ❌',
@@ -10,7 +12,7 @@ export const handleError = (error: any) => {
     });
 };
 
-export function handleSuccess<T>(response: T | any, endpoint: string | undefined) {
+export function handleSuccess(response: AxiosResponse, endpoint: string | undefined) {
     toast({
         variant: 'default',
         title: 'Well done ✔️',

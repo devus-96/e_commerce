@@ -1,12 +1,14 @@
-'server-only'
 import axios, { AxiosHeaders, AxiosInstance } from "axios";
-import { useAuth } from "@clerk/nextjs";
 
-var httpInstance: AxiosInstance | undefined;
+let httpInstance: AxiosInstance | undefined;
 
-async function getToken () {
-  
-}
+const fetchToken = async () => {
+  const response = await fetch(process.env.NEXT_PUBLIC_SERVER_URL + "/api/token");
+  const data = await response.json();
+  return data.token;
+};
+
+const token = await fetchToken();
 
 export const HttpClient = (): AxiosInstance => {
   if (httpInstance) {
@@ -16,9 +18,6 @@ export const HttpClient = (): AxiosInstance => {
   const headers = AxiosHeaders.from({
     Accept: "application/json",
   });
-
-  
-  const token = getToken();
 
   if (token) {
       headers.set("Authorization", `Bearer ${token}`);
@@ -32,13 +31,11 @@ export const HttpClient = (): AxiosInstance => {
       process.env.NEXT_PUBLIC_API_URL,
   });
 
-  const isDev = process.env.NODE_ENV !== "production";
-
   instance.interceptors.request.use((config) => {
-    isDev && console.info(`REQUEST (${config.url}) => `, config);
+    console.info(`REQUEST (${config.url}) => `, config);
 
     if (!config.headers.get("Authorization")) {
-      const token = getToken();
+      const token = fetchToken();
 
       if (token) {
         config.headers.set("Authorization", `Bearer ${token}`);
@@ -50,12 +47,12 @@ export const HttpClient = (): AxiosInstance => {
 
   instance.interceptors.response.use(
     (res) => {
-      isDev && console.info(`RESPONSE (${res.config.url}) => `, res);
+      console.info(`RESPONSE (${res.config.url}) => `, res);
 
       return res;
     },
     (error) => {
-      isDev && console.info(`RESPONSE-ERROR (${error.config.url}) => `, error);
+      console.info(`RESPONSE-ERROR (${error.config.url}) => `, error);
 
       throw error;
     }

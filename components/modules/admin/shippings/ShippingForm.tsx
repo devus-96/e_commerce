@@ -10,7 +10,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,8 +56,7 @@ export default function ShippingForm({ _id }: { _id?: string }) {
   // 1. set state
   const [isLoading, setLoading] = useState(false);
   const [shipping, setData] = useState<ShippingFormData>();
-  const router = useRouter();
-  const { userId, getToken } = useAuth();
+  const { userId } = useAuth();
   const [value, setValue] = React.useState<string[]>([]);
   const [open, setOpen] = React.useState(false);
   const { create, update, isCreating, isUpdating} = use_admin_shipping()

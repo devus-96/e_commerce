@@ -1,7 +1,6 @@
 import useSWRMutation from "swr/mutation";
 import { paramsProps, postRequest, putRequest, fetcher } from "../services";
 import { SlideFormData } from "@/types/forms";
-import { Slide } from "@/components/modules/admin/slides/columns";
 import useSWR from "swr";
 import { HttpClient } from "../httpClient";
 import { handleError } from "../toast";

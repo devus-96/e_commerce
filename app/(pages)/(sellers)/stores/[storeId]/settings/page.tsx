@@ -1,5 +1,5 @@
 import Container from "@/components/custom/Container";
-import Settings from "@/components/modules/sellers/stores/settings";
+import Settings from "@/components/modules/sellers/stores/setting";
 import { checkRole } from "@/lib/roles";
 import { Metadata } from "next";
 import React from "react";

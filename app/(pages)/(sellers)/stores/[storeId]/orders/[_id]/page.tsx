@@ -1,4 +1,4 @@
-import { getOrderitems } from "@/actions/orderitem";
+import { getOrder } from "@/api/endpoint/order";
 import Container from "@/components/custom/Container";
 import OrderForm from "@/components/modules/sellers/stores/orders/OrderForm";
 import { Metadata } from "next";
@@ -9,7 +9,7 @@ export default async function page({
 }: {
   params: {_id: string };
 }) {
-  const order = await getOrderitems(params._id);
+  const order = await getOrder({_id: params._id});
 
   return (
     <>

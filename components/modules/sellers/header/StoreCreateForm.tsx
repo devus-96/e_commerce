@@ -14,18 +14,12 @@ import { Input } from "@/components/ui/input";
 import { storeValidationSchema } from "@/types/schemas";
 import { z } from "zod";
 import { useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
 import Loading from "@/components/custom/Loading";
 import React from "react";
 import { useStore } from "@/api/endpoint/store";
 
-export function StoreCreateForm({
-  setOpenAddStore,
-}: {
-  setOpenAddStore: (v: boolean) => void;
-}) {
+export function StoreCreateForm() {
   const { userId} = useAuth();
   const {trigger, isMutating, err} = useStore()
 

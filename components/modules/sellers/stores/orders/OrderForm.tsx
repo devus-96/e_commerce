@@ -8,9 +8,6 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import axios from "axios";
-import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { statusValidationSchema } from "@/types/schemas";
@@ -45,7 +42,6 @@ import Image from "next/image";
 import { putTrackOrder, useOrder } from "@/api/endpoint/order";
 
 export default function OrderForm({ order }: { order: TypeOrderItemModel }) {
-  const { getToken } = useAuth();
   const {update, isUpdating} = useOrder({ _id: order._id })
 
   const form = useForm<z.infer<typeof statusValidationSchema>>({
@@ -61,7 +57,6 @@ export default function OrderForm({ order }: { order: TypeOrderItemModel }) {
   };
 
   const updateTrackOrder = async (e: string) => {
-    const token = await getToken();
     putTrackOrder({ _id: order.trackorder._id }, { status: e }).then((response) => {
       toast({
         variant: "default",

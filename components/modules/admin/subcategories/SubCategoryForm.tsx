@@ -7,7 +7,6 @@ import { SubcategoryValidationSchema } from "@/types/schemas";
 import { useAuth } from "@clerk/nextjs";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

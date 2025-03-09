@@ -70,7 +70,7 @@ export default function ShippingForm({
   useEffect(() => {
     const getData = async () => {
       setLoading(true);
-      getCampaign().then((response) => {
+      getCampaign({store: store, _id: _id}).then((response) => {
           setData(response);
           setValue(response?.region);
           form.reset(response);

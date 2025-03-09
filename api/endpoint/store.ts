@@ -77,7 +77,7 @@ export function useStore(params?: paramsProps) {
 
     const { trigger: DeleteStore, isMutating: isDeleting } = useSWRMutation(
         "/api/user/stores",
-        (url, { arg }: {arg: DeleteRequestArgs}) => delRequest<DeleteRequestArgs>(url, arg.queryParams) // Passer l'ID de la commande
+        (url, { arg }: {arg: DeleteRequestArgs}) => delRequest(url, arg.queryParams) // Passer l'ID de la commande
     );
 
     const { data, isLoading } = useSWR<TypeStoreModel[]>(

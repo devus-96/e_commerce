@@ -40,7 +40,7 @@ export default function CollectionForm({ _id }: { _id?: string }) {
   // 1. set state
   const [isLoading, setLoading] = useState(false);
   const [collection, setData] = useState<CollectionFormData>();
-  const { userId, getToken } = useAuth();
+  const { userId } = useAuth();
   const {paramsRef, create, isCreating, update, isUpdating,} = useCollection({ _id: collection?._id });
 
   // 4. Define your validation and default values.

@@ -1,4 +1,4 @@
-import { getEarnings } from "@/actions/orderitem";
+import { getOrder } from "@/api/endpoint/order";
 import Container from "@/components/custom/Container";
 import WithdrawalForm from "@/components/modules/sellers/stores/withdrawals/WithdrawalForm";
 import { Metadata } from "next";
@@ -10,7 +10,7 @@ export default async function page({
   params: { _id: string; storeId: string };
 }) {
   const { _id, storeId } = await params;
-  const earnings = await getEarnings(storeId);
+  const earnings = await getOrder({ storeId: storeId, action: "earning" });
 
   return (
     <>

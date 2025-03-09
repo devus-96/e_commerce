@@ -33,6 +33,20 @@ export async function getAdminSubscription (params?: paramsProps) {
         handleError(error);
       })
     };
+
+    export const getPayments = async (params?: paramsProps) => {
+      //get user token    
+      return await HttpClient()
+      .get("/api/admin/payments", {
+        params: params ? params : undefined,
+      })
+      .then((response) => {
+        return response.data.data[0].totalEarning;
+      })
+      .catch((error) => {
+        handleError(error);
+      })
+    };
     
 async function postSuscription(url: string, { arg }: { arg: CheckoutFormData }) {
       return await HttpClient()

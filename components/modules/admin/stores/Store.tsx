@@ -29,20 +29,17 @@ import { Button } from "@/components/ui/button";
 import Heading from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import Loading from "@/components/custom/Loading";
-import { useAuth } from "@clerk/nextjs";
 import { getStore, useStore } from "@/api/endpoint/store";
 import { useRouter } from "next/navigation";
 
 export default function Store({ _id }: { _id: string }) {
   const [isLoading, setLoading] = useState(false);
   const [store, setData] = useState<TypeStoreModel>();
-  const { getToken } = useAuth();
   const router = useRouter();
   const {paramsRef, update, isUpdating} = useStore()
  
   useEffect(() => {
     const getData = async () => {
-      const token = await getToken();
       setLoading(true);
       getStore({ _id: _id }).then((response) => {
         setData(response);

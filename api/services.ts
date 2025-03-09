@@ -57,7 +57,7 @@ export async function putRequest<T> (url: string, params: paramsProps | undefine
      })
 }
 
-export async function delRequest<T>(url: string, params: paramsProps | undefined) {
+export async function delRequest(url: string, params: paramsProps | undefined) {
       return await HttpClient()
         .delete(url, {
           params: params ? params : undefined
