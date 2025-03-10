@@ -65,6 +65,7 @@ export async function delRequest(url: string, params: paramsProps | undefined) {
         .then((response) => {
           const data = response.data;
           toast(data.message);
+          return response.data
         })
         .catch((error) => {
           handleError(error);

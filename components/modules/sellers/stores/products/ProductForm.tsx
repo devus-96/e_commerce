@@ -16,9 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import axios from "axios";
 import { useAuth } from "@clerk/nextjs";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductFormData } from "@/types/forms";
@@ -34,14 +32,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ToastAction } from "@/components/ui/toast";
 import { toast } from "@/hooks/use-toast";
 import {
   Image as TypeImage,
   TypeBrandModel,
   TypeCategoryModel,
   TypeColorModel,
-  TypeProductVariantModel,
   TypeSizeModel,
   TypeSubCategoryModel,
   TypeStoreModel,
@@ -106,7 +102,7 @@ import { status, inventory, units } from "@/constants";
 import { nameFormat } from "@/lib/regex";
 import "react-quill-new/dist/quill.snow.css";
 import dynamic from "next/dynamic";
-import { get_user_product, getColors, getImages, getSizes } from "@/api/endpoint/product";
+import { get_user_product, getColors, getImages, getSizes, postColors, postImages, postSizes, useProduct } from "@/api/endpoint/product";
 import { getSubcategories } from "@/api/endpoint/subCategorie";
 import { getCollections } from "@/api/endpoint/collection";
 import { getTags } from "@/api/endpoint/tags";
@@ -134,12 +130,9 @@ export default function ProductForm({
   const [brands, setBrands] = useState<TypeBrandModel[]>();
   const [isLoading, setLoading] = useState(false);
   const [product, setProduct] = useState<ProductFormData>();
-  const [colors, setColors] = useState<TypeColorModel[]>([]);
   const [colorsList, setColorsList] = useState<TypeColorModel[]>([]);
   const [sizesList, setSizesList] = useState<TypeSizeModel[]>([]);
-  const [sizes, setSizes] = useState<TypeSizeModel[]>([]);
   const [activeOption, setActiveOption] = useState<string>("");
-  const [activeVariant, setActiveVariant] = useState<boolean>(false);
   const [optionItem, setOptionItem] = useState<string>("");
   const [store, setStore] = useState<TypeStoreModel>();
   const [activeOptionItem, setActiveOptionItem] = useState<TypeColorModel>();
@@ -157,292 +150,18 @@ export default function ProductForm({
   const [openTag, setOpenTag] = React.useState(false);
   const [collections, setCollections] = React.useState<string[]>([]);
   const [tags, setTags] = React.useState<string[]>([]);
-  const { getToken } = useAuth();
+  const {
+    create, 
+    update, 
+    isCreating, 
+    isUpdating, 
+    paramsRef,
+    colorRef,
+    sizeRef,
+    activeVariantRef
+  } = useProduct(undefined, storeId)
 
-  // 2. Form method
-  async function postRequest(url: string, { arg }: { arg: ProductFormData }) {
-    const token = await getToken();
-    return await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then(async (response) => {
-        const data = response.data;
-        if (data.success === false) {
-          toast({
-            variant: "default",
-            title: "Upgrade to Pro!",
-            description: data.message,
-          });
-        } else {
-          const dataArray: TypeProductVariantModel[] = [];
-
-          if (!activeVariant && colors.length > 0 && sizes.length > 0) {
-            colors.forEach((color) => {
-              sizes.forEach((size) => {
-                const variant = {
-                  productId: data.data._id,
-                  name: color.slug + "|" + size.slug,
-                  color: color,
-                  colorImages: color.images,
-                  size: size,
-                  sizeImages: size.images,
-                  weight: data.data.weight,
-                  inventory: data.data.inventory,
-                  sku: data.data.sku,
-                  price: data.data.price,
-                  discount: data.data.discount,
-                  colorValue: color.value,
-                  status: data.data.status,
-                };
-                dataArray.push(variant);
-              });
-            });
-          } else if (
-            !activeVariant &&
-            colors.length > 0 &&
-            sizes.length === 0
-          ) {
-            colors.forEach((color) => {
-              const variant = {
-                productId: data.data._id,
-                name: color.slug,
-                color: color,
-                colorImages: color.images,
-                weight: data.data.weight,
-                inventory: data.data.inventory,
-                sku: data.data.sku,
-                price: data.data.price,
-                discount: data.data.discount,
-                colorValue: color.value,
-                status: data.data.status,
-              };
-              dataArray.push(variant);
-              // setProductVariants([...productVariants, variant]);
-            });
-          }
-          //api variants
-          await axios
-            .post(
-              process.env.NEXT_PUBLIC_API_URL + "/api/user/productvariants",
-              dataArray,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            )
-            .then(() => {
-              toast({
-                variant: "default",
-                title: "Well done ✔️",
-                description: data.message,
-                action: (
-                  <ToastAction altText={`Go to ${data.data.name}`}>
-                    <Link href={`/stores/${storeId}/products/${data.data._id}`}>
-                      Go to {data.data.name.substring(0, 15)}
-                    </Link>
-                  </ToastAction>
-                ),
-              });
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        }
-      })
-      .catch((err) => {
-        toast({
-          variant: "default",
-          title: "OOps ❌",
-          description: err.message,
-        });
-        console.log(err.message);
-      })
-      .finally(() => {});
-  }
-  async function putRequest(url: string, { arg }: { arg: ProductFormData }) {
-    const token = await getToken();
-    return await axios
-      .put(process.env.NEXT_PUBLIC_API_URL + url, arg, {
-        params: { _id: product?._id },
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then(async (response) => {
-        const data = response.data;
-
-        if (data.success === false) {
-          toast({
-            variant: "default",
-            title: "Oops, error",
-            description: data.message,
-          });
-        } else {
-          // Delete all variants
-          await axios
-            .delete(
-              process.env.NEXT_PUBLIC_API_URL + "/api/user/productvariants",
-              {
-                params: {
-                  productId: data.data._id,
-                },
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            )
-            .then(async (res) => {
-              const data_pv = res.data;
-
-              if (data_pv.success === true) {
-                // create new variation
-                const dataArray: TypeProductVariantModel[] = [];
-                if (!activeVariant && colors.length > 0 && sizes.length > 0) {
-                  colors.forEach((color) => {
-                    sizes.forEach((size) => {
-                      const variant = {
-                        productId: data.data._id,
-                        name: color.slug + "|" + size.slug,
-                        color: color,
-                        colorImages: color.images,
-                        size: size,
-                        sizeImages: size.images,
-                        weight: data.data.weight,
-                        inventory: data.data.inventory,
-                        sku: data.data.sku,
-                        price: data.data.price,
-                        discount: data.data.discount,
-                        colorValue: color.value,
-                        status: data.data.status,
-                      };
-                      dataArray.push(variant);
-                    });
-                  });
-
-                  //create api variants
-                  await axios
-                    .post(
-                      process.env.NEXT_PUBLIC_API_URL +
-                        "/api/user/productvariants",
-                      dataArray,
-                      {
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                        },
-                      }
-                    )
-                    .then(() => {
-                      toast({
-                        variant: "default",
-                        title: "Well done ✔️",
-                        description: data.message,
-                        action: (
-                          <ToastAction altText={`Go to ${data.data.name}`}>
-                            <Link
-                              href={`/stores/${storeId}/products/${data.data._id}`}
-                            >
-                              Go to {data.data.name.substring(0, 15)}
-                            </Link>
-                          </ToastAction>
-                        ),
-                      });
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                    });
-                } else if (
-                  !activeVariant &&
-                  colors.length > 0 &&
-                  sizes.length === 0
-                ) {
-                  colors.forEach((color) => {
-                    const variant = {
-                      productId: data.data._id,
-                      name: color.slug,
-                      color: color,
-                      colorImages: color.images,
-                      weight: data.data.weight,
-                      inventory: data.data.inventory,
-                      sku: data.data.sku,
-                      price: data.data.price,
-                      discount: data.data.discount,
-                      colorValue: color.value,
-                      status: data.data.status,
-                    };
-                    dataArray.push(variant);
-                  });
-
-                  //create api variants
-                  await axios
-                    .post(
-                      process.env.NEXT_PUBLIC_API_URL +
-                        "/api/user/productvariants",
-                      dataArray,
-                      {
-                        headers: {
-                          "Content-Type": "application/json",
-                          Authorization: `Bearer ${token}`,
-                        },
-                      }
-                    )
-                    .then(() => {
-                      toast({
-                        variant: "default",
-                        title: "Well done ✔️",
-                        description: data.message,
-                        action: (
-                          <ToastAction altText={`Go to ${data.data.name}`}>
-                            <Link
-                              href={`/stores/${storeId}/products/${data.data._id}`}
-                            >
-                              Go to {data.data.name.substring(0, 15)}
-                            </Link>
-                          </ToastAction>
-                        ),
-                      });
-                    })
-                    .catch((err) => {
-                      console.log(err);
-                    });
-                }
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        }
-      })
-      .catch((err) => {
-        toast({
-          variant: "default",
-          title: "OOps ❌",
-          description: err.message,
-        });
-        console.log(err.message);
-      })
-      .finally(() => {
-        // router.refresh();
-      });
-  }
-
-  // 3. Set Form mutation
-  const { trigger: create, isMutating: isCreating } = useSWRMutation(
-    "/api/user/products",
-    postRequest /* options */
-  );
-  const { trigger: update, isMutating: isUpdating } = useSWRMutation(
-    "/api/user/products",
-    putRequest /* options */
-  );
+ 
 
   // 4. Define your validation and default values.
   const form = useForm<z.infer<typeof productValidationSchema>>({
@@ -479,6 +198,7 @@ export default function ProductForm({
           setImages(response.images);
 
           form.reset(response);
+          paramsRef.current = {_id: response}
 
           for (
             let index = 0;
@@ -493,8 +213,8 @@ export default function ProductForm({
               images: variant.colorImages,
               value: variant.colorValue,
             };
-            if (!colors.find((item) => item._id === tempColor._id)) {
-              colors.push(tempColor);
+            if (!colorRef.current.find((item) => item._id === tempColor._id)) {
+              colorRef.current.push(tempColor);
             }
 
             //fill sizes
@@ -502,9 +222,9 @@ export default function ProductForm({
               ...variant.size,
               images: variant.sizeImages,
             };
-            if (!sizes.find((item) => item._id === tempSize._id)) {
+            if (!sizeRef.current.find((item) => item._id === tempSize._id)) {
               if (tempSize.size) {
-                sizes.push(tempSize);
+                sizeRef.current.push(tempSize);
               }
             }
           }
@@ -660,7 +380,7 @@ export default function ProductForm({
       !category ||
       subCategories?.length === 0 ||
       !brand ||
-      colors.length === 0
+      colorRef.current.length === 0
     ) {
       toast({
         variant: "destructive",
@@ -712,7 +432,6 @@ export default function ProductForm({
   // 8. Add option item
   const handleAddOptionItem = async (event: React.KeyboardEvent) => {
     setLoading(true);
-    const token = await getToken();
     if (event.key === "Enter") {
       //check option active and add value
       if (activeOption === "" || optionItem == "") {
@@ -744,7 +463,7 @@ export default function ProductForm({
           store: store,
           status: "publish",
         };
-        if (colors.length > 10) {
+        if (colorRef.current.length > 10) {
           toast({
             variant: "destructive",
             title: "Error",
@@ -752,7 +471,7 @@ export default function ProductForm({
           });
           return;
         }
-        if (colors.find((item: TypeColorModel) => item.slug === data.slug)) {
+        if (colorRef.current.find((item: TypeColorModel) => item.slug === data.slug)) {
           toast({
             variant: "destructive",
             title: "Error",
@@ -762,15 +481,9 @@ export default function ProductForm({
         }
 
         //api save color
-        await axios
-          .post(process.env.NEXT_PUBLIC_API_URL + "/api/user/colors", data, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          })
+          postColors(data)
           .then((response) => {
-            setColors([...colors, response.data.data]);
+            colorRef.current = [...colorRef.current, response.data.data];
           })
           .catch((error) => {
             console.log(error);
@@ -791,14 +504,14 @@ export default function ProductForm({
           status: "publish",
         };
 
-        if (sizes.length > 10) {
+        if (sizeRef.current.length > 10) {
           toast({
             variant: "destructive",
             title: "Error",
             description: "Max length reached",
           });
         }
-        if (sizes.find((item: TypeSizeModel) => item.slug === data.slug)) {
+        if (sizeRef.current.find((item: TypeSizeModel) => item.slug === data.slug)) {
           toast({
             variant: "destructive",
             title: "Error",
@@ -807,15 +520,9 @@ export default function ProductForm({
           return;
         }
 
-        await axios
-          .post(process.env.NEXT_PUBLIC_API_URL + "/api/user/sizes", data, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          })
+        postSizes(data)
           .then((response) => {
-            setSizes([...sizes, response.data.data]);
+            sizeRef.current = [...sizeRef.current, response.data.data];
           })
           .catch((error) => {
             console.log(error);
@@ -831,54 +538,50 @@ export default function ProductForm({
 
   const handleRemoveOptionItem = (slug: string) => {
     if (activeOption === "color") {
-      setColors(
-        colors.filter((current: TypeColorModel) => current.slug !== slug)
-      );
+      colorRef.current = colorRef.current.filter((current: TypeColorModel) => current.slug !== slug)
 
       return;
     }
 
     if (activeOption === "size") {
-      setSizes(sizes.filter((current: TypeSizeModel) => current.slug !== slug));
+      sizeRef.current = sizeRef.current.filter((current: TypeSizeModel) => current.slug !== slug);
       return;
     }
 
     //update
-    setColors(
-      colors.filter((current: TypeColorModel) => current.slug !== slug)
-    );
-    setSizes(sizes.filter((current: TypeSizeModel) => current.slug !== slug));
+    colorRef.current = colorRef.current.filter((current: TypeColorModel) => current.slug !== slug)
+    sizeRef.current = sizeRef.current.filter((current: TypeSizeModel) => current.slug !== slug);
   };
 
   const handleEditColor = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.currentTarget.value;
-    const newColors = colors.filter((item: TypeColorModel) =>
+    const newColors = colorRef.current.filter((item: TypeColorModel) =>
       activeOptionItem?.slug === item.slug ? (item.value = val) : item
     );
-    setColors(newColors);
+    colorRef.current = newColors
   };
 
   const handleAddImage = (url: string, type: string) => {
     if (type === "color") {
-      const newColors = colors.filter((item: TypeColorModel) =>
+      const newColors = colorRef.current.filter((item: TypeColorModel) =>
         activeOptionItem?.slug == item.slug
           ? item.images.find((val: TypeImage) => val.url === url)
             ? ""
             : item.images.push({ url: url })
           : item
       );
-      setColors(newColors);
+      colorRef.current = newColors
     }
 
     if (type === "size") {
-      const newSizes = sizes.filter((item: TypeSizeModel) =>
+      const newSizes = sizeRef.current.filter((item: TypeSizeModel) =>
         activeOptionItem?.slug == item.slug
           ? item.images.find((val: TypeImage) => val.url === url)
             ? ""
             : item.images.push({ url: url })
           : item
       );
-      setSizes(newSizes);
+      sizeRef.current = newSizes
     }
   };
 
@@ -886,7 +589,7 @@ export default function ProductForm({
     if (activeOption === "color") {
       const data = colorsList.find((color) => color.slug === slug);
       if (data) {
-        if (colors.find((color) => color.slug === data.slug)) {
+        if (colorRef.current.find((color) => color.slug === data.slug)) {
           toast({
             variant: "destructive",
             title: "Error",
@@ -894,13 +597,13 @@ export default function ProductForm({
           });
           return;
         }
-        setColors([...colors, data]);
+        colorRef.current = [...colorRef.current, data];
       }
     }
     if (activeOption === "size") {
       const data = sizesList.find((size) => size.slug === slug);
       if (data) {
-        if (sizes.find((size) => size.slug === data.slug)) {
+        if (sizeRef.current.find((size) => size.slug === data.slug)) {
           toast({
             variant: "destructive",
             title: "Error",
@@ -908,21 +611,20 @@ export default function ProductForm({
           });
           return;
         }
-        setSizes([...sizes, data]);
+        sizeRef.current = [...sizeRef.current, data]
       }
     }
   };
 
   const handleDeleteAllImage = () => {
-    const newColors = colors.filter((item: TypeColorModel) =>
+    const newColors = colorRef.current.filter((item: TypeColorModel) =>
       activeOptionItem?.slug === item.slug ? (item.images = []) : item
     );
-    setColors(newColors);
+    colorRef.current = newColors;
   };
 
   const handleSaveImage = async (url: string) => {
     setLoading(true);
-    const token = await getToken();
     // setImages([...images, { url }]);
     images.push({ url });
     form.setValue("images", images);
@@ -932,13 +634,7 @@ export default function ProductForm({
       store: storeId,
       user_id: userId,
     };
-    await axios
-      .post(process.env.NEXT_PUBLIC_API_URL + "/api/user/images", data, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
+    postImages(data)
       .then(() => {})
       .catch((err) => {
         console.log(err.message);
@@ -1328,7 +1024,7 @@ export default function ProductForm({
                         <div className="flex gap-3 flex-wrap w-full">
                           <span>Colors</span>
                           <Separator />
-                          {colors.map((item: TypeColorModel) => (
+                          {colorRef.current.map((item: TypeColorModel) => (
                             <Badge
                               key={item.slug}
                               title="delete"
@@ -1344,8 +1040,8 @@ export default function ProductForm({
                         <div className="flex gap-3 flex-wrap w-full">
                           <span>Sizes</span>
                           <Separator />
-                          {sizes.length > 0 &&
-                            sizes.map((item: TypeSizeModel) => (
+                          {sizeRef.current.length > 0 &&
+                            sizeRef.current.map((item: TypeSizeModel) => (
                               <Badge
                                 key={item.slug}
                                 title="close"
@@ -1373,7 +1069,7 @@ export default function ProductForm({
                       <div className="flex gap-3 flex-wrap w-full">
                         <span>Colors</span>
                         <Separator />
-                        {colors.map((item: TypeColorModel) => (
+                        {colorRef.current.map((item: TypeColorModel) => (
                           <Badge
                             key={item.slug}
                             title=""
@@ -1535,8 +1231,8 @@ export default function ProductForm({
                       <div className="flex gap-3 flex-wrap w-full">
                         <span>Sizes</span>
                         <Separator />
-                        {sizes.length > 0 &&
-                          sizes.map((item: TypeSizeModel) => (
+                        {sizeRef.current.length > 0 &&
+                          sizeRef.current.map((item: TypeSizeModel) => (
                             <Badge
                               key={item.slug}
                               title="close"
@@ -1680,7 +1376,7 @@ export default function ProductForm({
                       <Checkbox
                         disabled
                         id="terms"
-                        onClick={() => setActiveVariant(!activeVariant)}
+                        onClick={() => activeVariantRef.current = !activeVariantRef.current}
                       />
                       <label
                         htmlFor="terms"
@@ -1699,7 +1395,7 @@ export default function ProductForm({
                 <Card
                   className={cn(
                     "rounded-xl bg-white shadow-xl hidden",
-                    activeVariant && "block"
+                    activeVariantRef.current && "block"
                   )}
                 >
                   <CardHeader className="border-b border-border">
@@ -1726,8 +1422,8 @@ export default function ProductForm({
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {colors.map((color: TypeColorModel, idx: number) =>
-                            sizes.map((size: TypeSizeModel, idx_: number) => (
+                          {colorRef.current.map((color: TypeColorModel, idx: number) =>
+                            sizeRef.current.map((size: TypeSizeModel, idx_: number) => (
                               <TableRow key={idx + "-" + idx_}>
                                 <TableCell className="font-bold tracking-wider">
                                   {color.slug}|<span>{size.slug}</span>
